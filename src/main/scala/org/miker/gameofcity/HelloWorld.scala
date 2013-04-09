@@ -2,6 +2,7 @@ package org.miker.gameofcity
 
 import java.util.{Date, Locale}
 import java.text.DateFormat._
+import org.miker.gameofcity.display.Display
 
 /**
  * 
@@ -11,12 +12,17 @@ object HelloWorld {
 
 
   def main(a: Array[String]) {
-    val now = new Date()
-    val df = getDateInstance(LONG, Locale.FRANCE);
-    println(df format now)
+    println("Starting the City")
 
-    val frame = new CityDisplay
-    frame.setSize(1000, 1000)
-    frame.setVisible(true)
+    val city = new City
+
+    val display = new Display
+
+    while (true) {
+      city.mutate
+      display.draw(city)
+      Thread.sleep(250)
+    }
+
   }
 }

@@ -1,1 +1,1 @@
-Learning how to Scala with IntelliJ
+Building a SimCity like simulation using simple cellular automata like rules.
