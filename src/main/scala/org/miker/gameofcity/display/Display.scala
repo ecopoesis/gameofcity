@@ -1,8 +1,8 @@
 package org.miker.gameofcity.display
 
 import javax.swing.JFrame
-import org.miker.gameofcity.City
 import java.awt.Component
+import org.miker.gameofcity.city.City
 
 /**
  * 

@@ -1,9 +1,12 @@
 package org.miker.gameofcity.display
 
 import javax.swing.JPanel
-import org.miker.gameofcity.City
 import java.awt.{Graphics, Dimension}
 import java.awt.image.BufferedImage
+import org.miker.gameofcity.city._
+import org.miker.gameofcity.city.Residential
+import org.miker.gameofcity.city.Industrial
+import org.miker.gameofcity.city.Commercial
 
 /**
  *
@@ -23,16 +26,12 @@ class Pane(val city: City) extends JPanel {
       val image = new BufferedImage(city.size, city.size, BufferedImage.TYPE_INT_ARGB)
       for (x <- 0 until city.size; y <- 0 until city.size) {
         val node = city.get(x, y)
-        if (node == 0) {
-          image.setRGB(x, y, 0xFF000000)
-        } else if (node == 1) {
-          image.setRGB(x, y, 0xFFFF0000)
-        } else if (node == 2) {
-          image.setRGB(x, y, 0xFF00FF00)
-        } else if (node == 3) {
-          image.setRGB(x, y, 0xFF0000FF)
-        } else if (node == 4) {
-          image.setRGB(x, y, 0xFFFFFFFF)
+
+        node.zone match {
+          case Commercial() => image.setRGB(x, y, 0xFF0000FF)
+          case Industrial() => image.setRGB(x, y, 0xFFFFFF00)
+          case Residential() => image.setRGB(x, y, 0xFF00FF00)
+          case None() => image.setRGB(x, y, 0xFFFFFFFF)
         }
       }
 
