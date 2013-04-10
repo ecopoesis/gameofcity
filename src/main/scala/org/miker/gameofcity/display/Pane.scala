@@ -28,10 +28,16 @@ class Pane(val city: City) extends JPanel {
         val node = city.get(x, y)
 
         node.zone match {
-          case Commercial() => image.setRGB(x, y, 0xFF0000FF)
+          case Commercial() => image.setRGB(x, y, 0xFF6666FF)
           case Industrial() => image.setRGB(x, y, 0xFFFFFF00)
           case Residential() => image.setRGB(x, y, 0xFF00FF00)
-          case None() => image.setRGB(x, y, 0xFFFFFFFF)
+          case None() => {
+            if (node.people.size > 0) {
+              image.setRGB(x, y, 0xFF000000)
+            } else {
+              image.setRGB(x, y, 0xFFFFFFFF)
+            }
+          }
         }
       }
 

@@ -9,18 +9,20 @@
     <file path="$PROJECT_DIR$/.idea/misc.xml" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1363288928089" ignored="false" />
     <file path="/HelloWorld.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365621993325" ignored="false" />
     <file path="/CityDisplay.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365453758225" ignored="false" />
-    <file path="/City.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365621324590" ignored="false" />
+    <file path="/City.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365627333272" ignored="false" />
     <file path="/README.md" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365450299338" ignored="false" />
     <file path="/a.dummy" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365451141270" ignored="false" />
     <file path="/Display.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365539128424" ignored="false" />
     <file path="/Panel.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365530452664" ignored="false" />
-    <file path="/Pane.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365621955193" ignored="false" />
+    <file path="/Pane.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365625546735" ignored="false" />
     <file path="/velocity.properties" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365618346828" ignored="false" />
     <file path="$USER_HOME$/code/tsq/working/api/merlock/src/main/resources/velocity.properties" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365607139299" ignored="false" />
     <file path="/Dummy.txt" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365607159863" ignored="false" />
-    <file path="/Node.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365621118125" ignored="false" />
+    <file path="/Node.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365624737379" ignored="false" />
     <file path="/Zoning.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365620875258" ignored="false" />
     <file path="/Zone.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365621088949" ignored="false" />
+    <file path="/People.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365625244896" ignored="false" />
+    <file path="/Person.scala" changelist="6021af41-c7ba-428a-901e-5cfd2e6c9abc" time="1365625103941" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,10 +87,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="City.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="City.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/City.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="55" selection-start="439" selection-end="439" vertical-scroll-proportion="0.0">
+            <state line="32" column="28" selection-start="1017" selection-end="1017" vertical-scroll-proportion="0.50526315">
+              <folding>
+                <element signature="e#35#59#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Person.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/people/Person.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="9" column="6" selection-start="207" selection-end="207" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -97,16 +110,7 @@
       <file leaf-file-name="Pane.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/display/Pane.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="41" column="12" selection-start="1174" selection-end="1174" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="JPanel.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar:///Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/src.zip!/javax/swing/JPanel.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="64" column="32" selection-start="2506" selection-end="2506" vertical-scroll-proportion="0.0">
+            <state line="34" column="36" selection-start="1090" selection-end="1091" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -148,20 +152,13 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Node.scala" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Node.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/Node.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="11" column="41" selection-start="113" selection-end="113" vertical-scroll-proportion="0.17368421">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Zoning.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/Zoning.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="0" selection-start="63" selection-end="179" vertical-scroll-proportion="0.0">
-              <folding />
+            <state line="11" column="74" selection-start="350" selection-end="361" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="e#35#75#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -193,10 +190,12 @@
         <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/display/Display.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/City.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/Zoning.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/Node.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/Zone.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/HelloWorld.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/people/People.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/people/Person.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/display/Pane.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/Node.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/City.scala" />
       </list>
     </option>
@@ -333,6 +332,74 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="city" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Zone.scala" />
+              <option name="myItemType" value="org.jetbrains.plugins.scala.components.ScalaDefsProjectViewProvider$ScalaFileTreeNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gameofcity" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gameofcity" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="scala" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gameofcity" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="city" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gameofcity" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gameofcity" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="scala" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="gameofcity" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="city" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="people" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -654,13 +721,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar:///Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/src.zip!/javax/swing/JPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="64" column="32" selection-start="2506" selection-end="2506" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/display/Pane.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="34" column="33" selection-start="1034" selection-end="1034" vertical-scroll-proportion="0.0">
@@ -715,9 +775,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/Zoning.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/HelloWorld.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="63" selection-end="179" vertical-scroll-proportion="0.0">
+        <state line="18" column="14" selection-start="329" selection-end="329" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -736,31 +796,35 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/HelloWorld.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="14" selection-start="329" selection-end="329" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/display/Pane.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="12" selection-start="1174" selection-end="1174" vertical-scroll-proportion="0.0">
+        <state line="34" column="36" selection-start="1090" selection-end="1091" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/City.scala">
+    <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/people/Person.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="55" selection-start="439" selection-end="439" vertical-scroll-proportion="0.0">
+        <state line="9" column="6" selection-start="207" selection-end="207" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/Node.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="41" selection-start="113" selection-end="113" vertical-scroll-proportion="0.17368421">
-          <folding />
+        <state line="11" column="74" selection-start="350" selection-end="361" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#35#75#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/org/miker/gameofcity/city/City.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="32" column="28" selection-start="1017" selection-end="1017" vertical-scroll-proportion="0.50526315">
+          <folding>
+            <element signature="e#35#59#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
