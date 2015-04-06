@@ -1,1 +1,54 @@
-target
+/services/logs
+/services/project/project
+project/target
+golden/project
+/services/target
+/services/tmp
+/services/.history
+/services/dist
+*.idea
+*.box
+*.iml
+/services/out
+/services/.idea_modules
+/services/.classpath
+/services/.project
+/services/RUNNING_PID
+/services/.settings
+*.codekit
+/servicesconf/application.conf
+/services/.sass-cache
+api/
+target/
+/services/projectFilesBackup
+/services/.publish.sh
+*.orig
+*.swp
+.history
+/ragnar/logs
+/journal
+/env/app
+/env/.vagrant
+
+# mac droppings
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
