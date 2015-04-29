@@ -2,12 +2,9 @@ package org.miker.gameofcity.display
 
 import javax.swing.JFrame
 import java.awt.Component
+
 import org.miker.gameofcity.city.City
 
-/**
- * 
- * @author miker
- */
 class Display {
 
   // setup the frame
@@ -23,7 +20,7 @@ class Display {
       frame.remove(component)
     }
 
-    component = frame.add(new Pane(city));
+    component = frame.add(new Pane(city))
     frame.pack
     frame.setVisible(true)
   }

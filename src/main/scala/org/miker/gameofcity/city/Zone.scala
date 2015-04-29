@@ -1,12 +1,13 @@
 package org.miker.gameofcity.city
 
-/**
- *
- * @author miker
- */
-abstract class Zone
-case class Commercial() extends Zone
-case class Industrial() extends Zone
-case class Residential() extends Zone
-case class None() extends Zone
+sealed trait Zone
 
+object Zone {
+
+  case object Commercial extends Zone
+
+  case object Industrial extends Zone
+
+  case object Residential extends Zone
+
+}
