@@ -17,5 +17,6 @@ data class Peep(
     val needs: Needs = Needs(),
     var money: Float = 100f,
     var jobId: BuildingId? = null,
-    var brain: Brain = IdleBrain()
+    var brain: Brain = IdleBrain(),
+    var lastAction: Action = Action.Idle
 )

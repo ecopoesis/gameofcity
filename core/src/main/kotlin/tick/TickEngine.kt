@@ -28,7 +28,10 @@ class TickEngine(val map: WorldMap) {
         // Phase 3: Validate (basic — skip conflicts for now)
 
         // Phase 4: Execute
-        actions.forEach { (peep, action) -> execute(peep, action) }
+        actions.forEach { (peep, action) ->
+            peep.lastAction = action
+            execute(peep, action)
+        }
 
         // Phase 5: Maintain
         peeps.values.forEach { peep ->

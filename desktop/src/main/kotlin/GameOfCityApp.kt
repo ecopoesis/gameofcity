@@ -19,6 +19,9 @@ class GameOfCityApp : ApplicationAdapter() {
     private var tickAccum = 0f
     private val tickDuration = 0.05f  // 20 ticks/second
 
+    private var verbose = false
+    private val logInterval = 100L  // print every N ticks
+
     override fun create() {
         val map = MapLoader.loadFromJson("maps/starter.json")
         engine = TickEngine(map)
@@ -35,10 +38,20 @@ class GameOfCityApp : ApplicationAdapter() {
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN))  cameraY -= cameraSpeed * delta
         if (Gdx.input.isKeyPressed(Input.Keys.UP))    cameraY += cameraSpeed * delta
 
+        // Toggle verbose logging with V key
+        if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
+            verbose = !verbose
+            println("[SimLogger] Verbose mode ${if (verbose) "ON" else "OFF"}")
+        }
+
         // Simulation tick at fixed rate
         tickAccum += delta
         while (tickAccum >= tickDuration) {
+            val prevTick = engine.tick
             engine.step()
+            if (verbose && prevTick / logInterval < engine.tick / logInterval) {
+                SimLogger.log(engine)
+            }
             tickAccum -= tickDuration
         }
 
