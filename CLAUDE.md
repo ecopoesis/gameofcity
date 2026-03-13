@@ -49,6 +49,14 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 ### Brain interface
 `Brain` is swappable per-Peep. Current implementations: `IdleBrain`, `RandomBrain`. `UtilityBrain` (Phase 2) scores actions by need urgency.
 
+## GitHub Workflow
+
+- All planned work is tracked as GitHub issues in `ecopoesis/gameofcity`
+- When asked to work on an issue, assign it to `ecopoesis` before starting
+- When work is done and pushed to `main`, close the issue
+- **Do not open PRs** unless explicitly asked — commit directly to `main`
+- New work identified during implementation should be filed as a new issue, not done silently
+
 ## Roadmap (GitHub Issues)
 
 | Phase | Issue | Status |
