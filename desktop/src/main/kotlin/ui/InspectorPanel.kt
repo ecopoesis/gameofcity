@@ -29,6 +29,7 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
 
     // Dynamic building widget
     private var insideLabel: Label? = null
+    private var friendsLabel: Label? = null
 
     // ---- Selection ----
 
@@ -71,6 +72,7 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         actionLabel?.setText(fmtAction(p.lastAction))
         moneyLabel?.setText("$%.2f".format(p.money))
         homeLabel?.setText(p.homeId?.let { "bldg$it" } ?: "EVICTED")
+        friendsLabel?.setText(formatFriends(p))
     }
 
     private fun updateBuilding(b: Building) {
@@ -100,7 +102,8 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
 
     private fun clearRefs() {
         hungerBar = null; fatigueBar = null; socialBar = null; entBar = null
-        actionLabel = null; moneyLabel = null; homeLabel = null; insideLabel = null
+        actionLabel = null; moneyLabel = null; homeLabel = null
+        insideLabel = null; friendsLabel = null
     }
 
     private fun buildPeepWindow(p: Peep): Window {
@@ -162,6 +165,7 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         moneyLabel  = dynLabel("Money",  "$%.2f".format(p.money))
         homeLabel   = dynLabel("Home",   p.homeId?.let { "bldg$it" } ?: "EVICTED")
         dynLabel("Job", p.jobId?.let { "bldg$it" } ?: "none")
+        friendsLabel = dynLabel("Friends", formatFriends(p))
 
         t.add().colspan(2).height(4f); t.row()
 
@@ -247,6 +251,12 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
 
     private fun barColor(value: Float, threshold: Float): Color =
         if (value > threshold) Color.RED else Color.GREEN
+
+    private fun formatFriends(p: Peep): String {
+        val top = p.friendships.entries.sortedByDescending { it.value }.take(3)
+        return if (top.isEmpty()) "none"
+        else top.joinToString(", ") { "P${it.key}(%.2f)".format(it.value) }
+    }
 
     private fun fmtAction(a: Action): String = when (a) {
         is Action.Work      -> "Work(bldg${a.buildingId})"

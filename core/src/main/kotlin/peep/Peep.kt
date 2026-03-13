@@ -18,5 +18,6 @@ data class Peep(
     var money: Float = 100f,
     var jobId: BuildingId? = null,
     var brain: Brain = IdleBrain(),
-    var lastAction: Action = Action.Idle
+    var lastAction: Action = Action.Idle,
+    val friendships: MutableMap<PeepId, Float> = mutableMapOf()
 )

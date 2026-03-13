@@ -3,6 +3,7 @@ package tick
 import peep.Action
 import peep.Peep
 import peep.WorldView
+import world.CellCoord
 import world.WorldMap
 
 class TickEngine(val map: WorldMap) {
@@ -44,6 +45,20 @@ class TickEngine(val map: WorldMap) {
             }
         }
 
+        // Proximity friendship: peeps sharing a cell grow closer slowly
+        val occupancy = mutableMapOf<CellCoord, MutableList<Int>>()
+        peeps.values.forEach { p -> occupancy.getOrPut(p.position) { mutableListOf() }.add(p.id) }
+        occupancy.values.forEach { ids ->
+            if (ids.size > 1) {
+                for (i in ids.indices) for (j in i + 1 until ids.size) {
+                    val a = peeps[ids[i]] ?: continue
+                    val b = peeps[ids[j]] ?: continue
+                    a.friendships[b.id] = (a.friendships[b.id] ?: 0f) + 0.0001f
+                    b.friendships[a.id] = (b.friendships[a.id] ?: 0f) + 0.0001f
+                }
+            }
+        }
+
         tick++
     }
 
@@ -62,7 +77,14 @@ class TickEngine(val map: WorldMap) {
             }
             is Action.Sleep -> peep.needs.fatigue = (peep.needs.fatigue - 0.5f).coerceAtLeast(0f)
             is Action.Work -> peep.money += 1f
-            is Action.Socialize -> peep.needs.social = (peep.needs.social - 0.3f).coerceAtLeast(0f)
+            is Action.Socialize -> {
+                peep.needs.social = (peep.needs.social - 0.3f).coerceAtLeast(0f)
+                val other = peeps[action.targetPeepId]
+                if (other != null) {
+                    peep.friendships[other.id]  = (peep.friendships[other.id]  ?: 0f) + 0.05f
+                    other.friendships[peep.id]  = (other.friendships[peep.id]  ?: 0f) + 0.05f
+                }
+            }
             is Action.Idle -> Unit
         }
     }
