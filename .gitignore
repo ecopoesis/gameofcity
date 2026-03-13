@@ -6,3 +6,7 @@ out/
 .idea/
 *.iml
 local.properties
+
+# Claude Code + oh-my-claudecode
+.claude/
+.omc/
