@@ -34,9 +34,14 @@ class TickEngine(val map: WorldMap) {
         }
 
         // Phase 5: Maintain
+        val rentDay = tick > 0L && tick % 1440L == 0L
         peeps.values.forEach { peep ->
-            peep.needs.hunger = (peep.needs.hunger + 0.001f).coerceIn(0f, 1f)
+            peep.needs.hunger  = (peep.needs.hunger  + 0.001f).coerceIn(0f, 1f)
             peep.needs.fatigue = (peep.needs.fatigue + 0.0005f).coerceIn(0f, 1f)
+            if (rentDay && peep.homeId != null) {
+                peep.money -= 20f
+                if (peep.money < 0f) peep.homeId = null  // evicted
+            }
         }
 
         tick++
@@ -51,9 +56,12 @@ class TickEngine(val map: WorldMap) {
                     map.peepsAt.getOrPut(action.target) { mutableListOf() }.add(peep.id)
                 }
             }
-            is Action.Eat -> peep.needs.hunger = (peep.needs.hunger - 0.5f).coerceAtLeast(0f)
+            is Action.Eat -> {
+                peep.needs.hunger = (peep.needs.hunger - 0.5f).coerceAtLeast(0f)
+                peep.money -= 5f
+            }
             is Action.Sleep -> peep.needs.fatigue = (peep.needs.fatigue - 0.5f).coerceAtLeast(0f)
-            is Action.Work -> peep.money += 10f
+            is Action.Work -> peep.money += 1f
             is Action.Socialize -> peep.needs.social = (peep.needs.social - 0.3f).coerceAtLeast(0f)
             is Action.Idle -> Unit
         }

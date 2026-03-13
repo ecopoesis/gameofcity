@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import tick.TickEngine
 import world.BuildingType
+import world.CellCoord
 import world.Terrain
 
 class CityRenderer(private val engine: TickEngine) {
@@ -13,6 +14,8 @@ class CityRenderer(private val engine: TickEngine) {
     private val map = engine.map
     private val camera = OrthographicCamera()
     private val shapes = ShapeRenderer()
+
+    var selectedCoord: CellCoord? = null
 
     companion object {
         const val CELL_SIZE = 32f
@@ -41,16 +44,14 @@ class CityRenderer(private val engine: TickEngine) {
         camera.update()
         shapes.projectionMatrix = camera.combined
 
-        // Draw terrain
+        // Draw terrain + peeps (Filled)
         shapes.begin(ShapeRenderer.ShapeType.Filled)
         map.groundCells().forEach { cell ->
-            val color = TERRAIN_COLORS[cell.terrain] ?: Color.MAGENTA
-            shapes.color = color
+            shapes.color = TERRAIN_COLORS[cell.terrain] ?: Color.MAGENTA
             val px = cell.coord.x * CELL_SIZE
             val py = cell.coord.y * CELL_SIZE
             shapes.rect(px, py, CELL_SIZE, CELL_SIZE)
         }
-        // Draw peeps as colored dots
         engine.peeps.values.forEach { peep ->
             shapes.color = peepColor(peep.needs.hunger, peep.needs.fatigue)
             val px = peep.position.x * CELL_SIZE + CELL_SIZE / 2f
@@ -59,28 +60,31 @@ class CityRenderer(private val engine: TickEngine) {
         }
         shapes.end()
 
-        // Draw building outlines
+        // Draw building outlines + selection highlight (Line)
         shapes.begin(ShapeRenderer.ShapeType.Line)
         map.buildings.values.forEach { building ->
-            val color = BUILDING_COLORS[building.type] ?: Color.WHITE
-            shapes.color = color
+            shapes.color = BUILDING_COLORS[building.type] ?: Color.WHITE
             building.cells.forEach { coord ->
-                val px = coord.x * CELL_SIZE
-                val py = coord.y * CELL_SIZE
-                shapes.rect(px + 1f, py + 1f, CELL_SIZE - 2f, CELL_SIZE - 2f)
+                shapes.rect(
+                    coord.x * CELL_SIZE + 1f,
+                    coord.y * CELL_SIZE + 1f,
+                    CELL_SIZE - 2f,
+                    CELL_SIZE - 2f
+                )
             }
+        }
+        selectedCoord?.let { coord ->
+            shapes.color = Color.WHITE
+            shapes.rect(coord.x * CELL_SIZE, coord.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
         }
         shapes.end()
     }
 
-    /** White when fine, shifts toward red (hungry) or blue (tired). */
     private fun peepColor(hunger: Float, fatigue: Float): Color = when {
-        hunger > 0.6f -> Color(1f, 0.3f, 0.3f, 1f)
+        hunger  > 0.6f -> Color(1f, 0.3f, 0.3f, 1f)
         fatigue > 0.8f -> Color(0.3f, 0.5f, 1f, 1f)
-        else -> Color.WHITE
+        else           -> Color.WHITE
     }
 
-    fun dispose() {
-        shapes.dispose()
-    }
+    fun dispose() = shapes.dispose()
 }
