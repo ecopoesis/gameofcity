@@ -1,0 +1,2402 @@
+{
+  "width": 20,
+  "height": 20,
+  "cells": [
+    {
+      "x": 0,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 1,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 3,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 4,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 6,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 7,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 8,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 9,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 11,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 13,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 14,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 16,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 17,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 18,
+      "terrain": "Road"
+    },
+    {
+      "x": 0,
+      "y": 19,
+      "terrain": "Road"
+    },
+    {
+      "x": 1,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 2,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 1,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 7,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 8,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 1,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 12,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 13,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 1,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 17,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 18,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 1,
+      "y": 19,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 2,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "terrain": "Park"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "terrain": "Park"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 2,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "terrain": "Park"
+    },
+    {
+      "x": 2,
+      "y": 8,
+      "terrain": "Park"
+    },
+    {
+      "x": 2,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 2,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 2,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 2,
+      "y": 12,
+      "terrain": "Park"
+    },
+    {
+      "x": 2,
+      "y": 13,
+      "terrain": "Park"
+    },
+    {
+      "x": 2,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 2,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 2,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 2,
+      "y": 17,
+      "terrain": "Park"
+    },
+    {
+      "x": 2,
+      "y": 18,
+      "terrain": "Park"
+    },
+    {
+      "x": 2,
+      "y": 19,
+      "terrain": "Park"
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "terrain": "Park"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "terrain": "Park"
+    },
+    {
+      "x": 3,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 3,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "terrain": "Park"
+    },
+    {
+      "x": 3,
+      "y": 8,
+      "terrain": "Park"
+    },
+    {
+      "x": 3,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 3,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 3,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 3,
+      "y": 12,
+      "terrain": "Park"
+    },
+    {
+      "x": 3,
+      "y": 13,
+      "terrain": "Park"
+    },
+    {
+      "x": 3,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 3,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 3,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 3,
+      "y": 17,
+      "terrain": "Park"
+    },
+    {
+      "x": 3,
+      "y": 18,
+      "terrain": "Park"
+    },
+    {
+      "x": 3,
+      "y": 19,
+      "terrain": "Park"
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 3,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 4,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 8,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 4,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 12,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 13,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 4,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 17,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 18,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 4,
+      "y": 19,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 5,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 2,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 6,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 7,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 8,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 9,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 11,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 12,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 13,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 14,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 16,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 17,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 18,
+      "terrain": "Road"
+    },
+    {
+      "x": 5,
+      "y": 19,
+      "terrain": "Road"
+    },
+    {
+      "x": 6,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 6,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 7,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 8,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 6,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 12,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 13,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 6,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 17,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 18,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 6,
+      "y": 19,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 7,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "terrain": "Park"
+    },
+    {
+      "x": 7,
+      "y": 3,
+      "terrain": "Park"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 7,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 7,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 7,
+      "y": 7,
+      "terrain": "Park"
+    },
+    {
+      "x": 7,
+      "y": 8,
+      "terrain": "Park"
+    },
+    {
+      "x": 7,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 7,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 7,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 7,
+      "y": 12,
+      "terrain": "Park"
+    },
+    {
+      "x": 7,
+      "y": 13,
+      "terrain": "Park"
+    },
+    {
+      "x": 7,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 7,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 7,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 7,
+      "y": 17,
+      "terrain": "Park"
+    },
+    {
+      "x": 7,
+      "y": 18,
+      "terrain": "Park"
+    },
+    {
+      "x": 7,
+      "y": 19,
+      "terrain": "Park"
+    },
+    {
+      "x": 8,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 8,
+      "y": 2,
+      "terrain": "Park"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "terrain": "Park"
+    },
+    {
+      "x": 8,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 8,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 8,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 8,
+      "y": 7,
+      "terrain": "Park"
+    },
+    {
+      "x": 8,
+      "y": 8,
+      "terrain": "Park"
+    },
+    {
+      "x": 8,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 8,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 8,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 8,
+      "y": 12,
+      "terrain": "Park"
+    },
+    {
+      "x": 8,
+      "y": 13,
+      "terrain": "Park"
+    },
+    {
+      "x": 8,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 8,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 8,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 8,
+      "y": 17,
+      "terrain": "Park"
+    },
+    {
+      "x": 8,
+      "y": 18,
+      "terrain": "Park"
+    },
+    {
+      "x": 8,
+      "y": 19,
+      "terrain": "Park"
+    },
+    {
+      "x": 9,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 9,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 2,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 3,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 9,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 7,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 8,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 9,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 12,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 13,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 9,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 17,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 18,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 9,
+      "y": 19,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 10,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 1,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 3,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 4,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 6,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 7,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 8,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 9,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 11,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 12,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 13,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 14,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 16,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 17,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 18,
+      "terrain": "Road"
+    },
+    {
+      "x": 10,
+      "y": 19,
+      "terrain": "Road"
+    },
+    {
+      "x": 11,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 11,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 2,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 3,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 11,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 7,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 8,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 11,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 12,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 13,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 11,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 17,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 18,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 11,
+      "y": 19,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 12,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 12,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 12,
+      "y": 2,
+      "terrain": "Park"
+    },
+    {
+      "x": 12,
+      "y": 3,
+      "terrain": "Park"
+    },
+    {
+      "x": 12,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 12,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 12,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 12,
+      "y": 7,
+      "terrain": "Park"
+    },
+    {
+      "x": 12,
+      "y": 8,
+      "terrain": "Park"
+    },
+    {
+      "x": 12,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 12,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 12,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 12,
+      "y": 12,
+      "terrain": "Park"
+    },
+    {
+      "x": 12,
+      "y": 13,
+      "terrain": "Park"
+    },
+    {
+      "x": 12,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 12,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 12,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 12,
+      "y": 17,
+      "terrain": "Park"
+    },
+    {
+      "x": 12,
+      "y": 18,
+      "terrain": "Park"
+    },
+    {
+      "x": 12,
+      "y": 19,
+      "terrain": "Park"
+    },
+    {
+      "x": 13,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 13,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 13,
+      "y": 2,
+      "terrain": "Park"
+    },
+    {
+      "x": 13,
+      "y": 3,
+      "terrain": "Park"
+    },
+    {
+      "x": 13,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 13,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 13,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 13,
+      "y": 7,
+      "terrain": "Park"
+    },
+    {
+      "x": 13,
+      "y": 8,
+      "terrain": "Park"
+    },
+    {
+      "x": 13,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 13,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 13,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 13,
+      "y": 12,
+      "terrain": "Park"
+    },
+    {
+      "x": 13,
+      "y": 13,
+      "terrain": "Park"
+    },
+    {
+      "x": 13,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 13,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 13,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 13,
+      "y": 17,
+      "terrain": "Park"
+    },
+    {
+      "x": 13,
+      "y": 18,
+      "terrain": "Park"
+    },
+    {
+      "x": 13,
+      "y": 19,
+      "terrain": "Park"
+    },
+    {
+      "x": 14,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 14,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 2,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 3,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 14,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 7,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 8,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 14,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 12,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 13,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 14,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 17,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 18,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 14,
+      "y": 19,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 15,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 1,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 2,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 3,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 4,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 6,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 7,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 8,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 9,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 11,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 12,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 13,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 14,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 16,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 17,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 18,
+      "terrain": "Road"
+    },
+    {
+      "x": 15,
+      "y": 19,
+      "terrain": "Road"
+    },
+    {
+      "x": 16,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 16,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 2,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 3,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 16,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 7,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 8,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 16,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 12,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 13,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 16,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 17,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 18,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 16,
+      "y": 19,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 17,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 17,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 17,
+      "y": 2,
+      "terrain": "Park"
+    },
+    {
+      "x": 17,
+      "y": 3,
+      "terrain": "Park"
+    },
+    {
+      "x": 17,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 17,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 17,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 17,
+      "y": 7,
+      "terrain": "Park"
+    },
+    {
+      "x": 17,
+      "y": 8,
+      "terrain": "Park"
+    },
+    {
+      "x": 17,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 17,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 17,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 17,
+      "y": 12,
+      "terrain": "Park"
+    },
+    {
+      "x": 17,
+      "y": 13,
+      "terrain": "Park"
+    },
+    {
+      "x": 17,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 17,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 17,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 17,
+      "y": 17,
+      "terrain": "Park"
+    },
+    {
+      "x": 17,
+      "y": 18,
+      "terrain": "Park"
+    },
+    {
+      "x": 17,
+      "y": 19,
+      "terrain": "Park"
+    },
+    {
+      "x": 18,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 18,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 18,
+      "y": 2,
+      "terrain": "Park"
+    },
+    {
+      "x": 18,
+      "y": 3,
+      "terrain": "Park"
+    },
+    {
+      "x": 18,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 18,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 18,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 18,
+      "y": 7,
+      "terrain": "Park"
+    },
+    {
+      "x": 18,
+      "y": 8,
+      "terrain": "Park"
+    },
+    {
+      "x": 18,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 18,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 18,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 18,
+      "y": 12,
+      "terrain": "Park"
+    },
+    {
+      "x": 18,
+      "y": 13,
+      "terrain": "Park"
+    },
+    {
+      "x": 18,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 18,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 18,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 18,
+      "y": 17,
+      "terrain": "Park"
+    },
+    {
+      "x": 18,
+      "y": 18,
+      "terrain": "Park"
+    },
+    {
+      "x": 18,
+      "y": 19,
+      "terrain": "Park"
+    },
+    {
+      "x": 19,
+      "y": 0,
+      "terrain": "Road"
+    },
+    {
+      "x": 19,
+      "y": 1,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 19,
+      "y": 2,
+      "terrain": "Park"
+    },
+    {
+      "x": 19,
+      "y": 3,
+      "terrain": "Park"
+    },
+    {
+      "x": 19,
+      "y": 4,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 19,
+      "y": 5,
+      "terrain": "Road"
+    },
+    {
+      "x": 19,
+      "y": 6,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 19,
+      "y": 7,
+      "terrain": "Park"
+    },
+    {
+      "x": 19,
+      "y": 8,
+      "terrain": "Park"
+    },
+    {
+      "x": 19,
+      "y": 9,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 19,
+      "y": 10,
+      "terrain": "Road"
+    },
+    {
+      "x": 19,
+      "y": 11,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 19,
+      "y": 12,
+      "terrain": "Park"
+    },
+    {
+      "x": 19,
+      "y": 13,
+      "terrain": "Park"
+    },
+    {
+      "x": 19,
+      "y": 14,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 19,
+      "y": 15,
+      "terrain": "Road"
+    },
+    {
+      "x": 19,
+      "y": 16,
+      "terrain": "Sidewalk"
+    },
+    {
+      "x": 19,
+      "y": 17,
+      "terrain": "Park"
+    },
+    {
+      "x": 19,
+      "y": 18,
+      "terrain": "Park"
+    },
+    {
+      "x": 19,
+      "y": 19,
+      "terrain": "Park"
+    }
+  ],
+  "buildings": [
+    {
+      "id": 1,
+      "type": "Residential",
+      "cells": [
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 1,
+          "y": 2
+        },
+        {
+          "x": 1,
+          "y": 3
+        },
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": 2
+        },
+        {
+          "x": 2,
+          "y": 3
+        },
+        {
+          "x": 3,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": 2
+        },
+        {
+          "x": 3,
+          "y": 3
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "Residential",
+      "cells": [
+        {
+          "x": 6,
+          "y": 1
+        },
+        {
+          "x": 6,
+          "y": 2
+        },
+        {
+          "x": 6,
+          "y": 3
+        },
+        {
+          "x": 7,
+          "y": 1
+        },
+        {
+          "x": 7,
+          "y": 2
+        },
+        {
+          "x": 7,
+          "y": 3
+        },
+        {
+          "x": 8,
+          "y": 1
+        },
+        {
+          "x": 8,
+          "y": 2
+        },
+        {
+          "x": 8,
+          "y": 3
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "Residential",
+      "cells": [
+        {
+          "x": 11,
+          "y": 1
+        },
+        {
+          "x": 11,
+          "y": 2
+        },
+        {
+          "x": 11,
+          "y": 3
+        },
+        {
+          "x": 12,
+          "y": 1
+        },
+        {
+          "x": 12,
+          "y": 2
+        },
+        {
+          "x": 12,
+          "y": 3
+        },
+        {
+          "x": 13,
+          "y": 1
+        },
+        {
+          "x": 13,
+          "y": 2
+        },
+        {
+          "x": 13,
+          "y": 3
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "Residential",
+      "cells": [
+        {
+          "x": 1,
+          "y": 6
+        },
+        {
+          "x": 1,
+          "y": 7
+        },
+        {
+          "x": 1,
+          "y": 8
+        },
+        {
+          "x": 2,
+          "y": 6
+        },
+        {
+          "x": 2,
+          "y": 7
+        },
+        {
+          "x": 2,
+          "y": 8
+        },
+        {
+          "x": 3,
+          "y": 6
+        },
+        {
+          "x": 3,
+          "y": 7
+        },
+        {
+          "x": 3,
+          "y": 8
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "Residential",
+      "cells": [
+        {
+          "x": 16,
+          "y": 1
+        },
+        {
+          "x": 16,
+          "y": 2
+        },
+        {
+          "x": 16,
+          "y": 3
+        },
+        {
+          "x": 17,
+          "y": 1
+        },
+        {
+          "x": 17,
+          "y": 2
+        },
+        {
+          "x": 17,
+          "y": 3
+        },
+        {
+          "x": 18,
+          "y": 1
+        },
+        {
+          "x": 18,
+          "y": 2
+        },
+        {
+          "x": 18,
+          "y": 3
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "Commercial",
+      "cells": [
+        {
+          "x": 6,
+          "y": 6
+        },
+        {
+          "x": 6,
+          "y": 7
+        },
+        {
+          "x": 6,
+          "y": 8
+        },
+        {
+          "x": 6,
+          "y": 9
+        },
+        {
+          "x": 7,
+          "y": 6
+        },
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 8
+        },
+        {
+          "x": 7,
+          "y": 9
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "Commercial",
+      "cells": [
+        {
+          "x": 11,
+          "y": 6
+        },
+        {
+          "x": 11,
+          "y": 7
+        },
+        {
+          "x": 11,
+          "y": 8
+        },
+        {
+          "x": 11,
+          "y": 9
+        },
+        {
+          "x": 12,
+          "y": 6
+        },
+        {
+          "x": 12,
+          "y": 7
+        },
+        {
+          "x": 12,
+          "y": 8
+        },
+        {
+          "x": 12,
+          "y": 9
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "Commercial",
+      "cells": [
+        {
+          "x": 16,
+          "y": 6
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 16,
+          "y": 8
+        },
+        {
+          "x": 16,
+          "y": 9
+        },
+        {
+          "x": 17,
+          "y": 6
+        },
+        {
+          "x": 17,
+          "y": 7
+        },
+        {
+          "x": 17,
+          "y": 8
+        },
+        {
+          "x": 17,
+          "y": 9
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "Industrial",
+      "cells": [
+        {
+          "x": 1,
+          "y": 11
+        },
+        {
+          "x": 1,
+          "y": 12
+        },
+        {
+          "x": 1,
+          "y": 13
+        },
+        {
+          "x": 1,
+          "y": 14
+        },
+        {
+          "x": 2,
+          "y": 11
+        },
+        {
+          "x": 2,
+          "y": 12
+        },
+        {
+          "x": 2,
+          "y": 13
+        },
+        {
+          "x": 2,
+          "y": 14
+        },
+        {
+          "x": 3,
+          "y": 11
+        },
+        {
+          "x": 3,
+          "y": 12
+        },
+        {
+          "x": 3,
+          "y": 13
+        },
+        {
+          "x": 3,
+          "y": 14
+        },
+        {
+          "x": 4,
+          "y": 11
+        },
+        {
+          "x": 4,
+          "y": 12
+        },
+        {
+          "x": 4,
+          "y": 13
+        },
+        {
+          "x": 4,
+          "y": 14
+        }
+      ]
+    }
+  ]
+}
