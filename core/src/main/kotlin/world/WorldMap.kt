@@ -45,6 +45,9 @@ class WorldMap(val width: Int, val height: Int) {
         for (x in 0 until width) for (y in 0 until height) yield(ground[x][y])
     }
 
+    fun buildingsOfType(type: BuildingType): List<Building> =
+        buildings.values.filter { it.type == type }
+
     fun isPassable(coord: CellCoord): Boolean {
         val cell = getCell(coord) ?: return false
         return cell.terrain != Terrain.Empty

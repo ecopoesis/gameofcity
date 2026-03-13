@@ -5,7 +5,7 @@ import peep.Peep
 import peep.WorldView
 import world.WorldMap
 
-class TickEngine(private val map: WorldMap) {
+class TickEngine(val map: WorldMap) {
 
     val peeps: MutableMap<Int, Peep> = mutableMapOf()
     var tick: Long = 0L
@@ -13,6 +13,7 @@ class TickEngine(private val map: WorldMap) {
     private val worldView = object : WorldView {
         override val map: WorldMap get() = this@TickEngine.map
         override val peeps: Map<Int, Peep> get() = this@TickEngine.peeps
+        override val tick: Long get() = this@TickEngine.tick
     }
 
     fun addPeep(peep: Peep) {

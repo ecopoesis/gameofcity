@@ -5,6 +5,7 @@ import world.WorldMap
 interface WorldView {
     val map: WorldMap
     val peeps: Map<Int, Peep>
+    val tick: Long
 }
 
 interface Brain {

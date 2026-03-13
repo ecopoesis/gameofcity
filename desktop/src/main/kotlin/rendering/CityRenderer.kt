@@ -4,18 +4,19 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import world.Building
+import tick.TickEngine
 import world.BuildingType
 import world.Terrain
-import world.WorldMap
 
-class CityRenderer(private val map: WorldMap) {
+class CityRenderer(private val engine: TickEngine) {
 
+    private val map = engine.map
     private val camera = OrthographicCamera()
     private val shapes = ShapeRenderer()
 
     companion object {
         const val CELL_SIZE = 32f
+        const val PEEP_RADIUS = 5f
 
         val TERRAIN_COLORS = mapOf(
             Terrain.Road     to Color(0.3f, 0.3f, 0.3f, 1f),
@@ -27,10 +28,10 @@ class CityRenderer(private val map: WorldMap) {
         )
 
         val BUILDING_COLORS = mapOf(
-            BuildingType.Residential    to Color(0.8f, 0.5f, 0.2f, 1f),
-            BuildingType.Commercial     to Color(0.2f, 0.5f, 0.9f, 1f),
-            BuildingType.Industrial     to Color(0.6f, 0.3f, 0.3f, 1f),
-            BuildingType.Entertainment  to Color(0.9f, 0.8f, 0.1f, 1f)
+            BuildingType.Residential   to Color(0.8f, 0.5f, 0.2f, 1f),
+            BuildingType.Commercial    to Color(0.2f, 0.5f, 0.9f, 1f),
+            BuildingType.Industrial    to Color(0.6f, 0.3f, 0.3f, 1f),
+            BuildingType.Entertainment to Color(0.9f, 0.8f, 0.1f, 1f)
         )
     }
 
@@ -49,6 +50,13 @@ class CityRenderer(private val map: WorldMap) {
             val py = cell.coord.y * CELL_SIZE
             shapes.rect(px, py, CELL_SIZE, CELL_SIZE)
         }
+        // Draw peeps as colored dots
+        engine.peeps.values.forEach { peep ->
+            shapes.color = peepColor(peep.needs.hunger, peep.needs.fatigue)
+            val px = peep.position.x * CELL_SIZE + CELL_SIZE / 2f
+            val py = peep.position.y * CELL_SIZE + CELL_SIZE / 2f
+            shapes.circle(px, py, PEEP_RADIUS, 8)
+        }
         shapes.end()
 
         // Draw building outlines
@@ -63,6 +71,13 @@ class CityRenderer(private val map: WorldMap) {
             }
         }
         shapes.end()
+    }
+
+    /** White when fine, shifts toward red (hungry) or blue (tired). */
+    private fun peepColor(hunger: Float, fatigue: Float): Color = when {
+        hunger > 0.6f -> Color(1f, 0.3f, 0.3f, 1f)
+        fatigue > 0.8f -> Color(0.3f, 0.5f, 1f, 1f)
+        else -> Color.WHITE
     }
 
     fun dispose() {
