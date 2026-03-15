@@ -81,7 +81,7 @@ class CityRenderer(
     // ---- Instance builders (called once at startup) ----
 
     private fun buildTerrainInstances(): List<ModelInstance> =
-        map.groundCells().map { cell ->
+        map.groundCells().filter { it.buildingId == null }.map { cell ->
             ModelInstance(boxModel).also { inst ->
                 inst.materials[0].set(
                     ColorAttribute.createDiffuse(TERRAIN_COLORS[cell.terrain] ?: Color.MAGENTA)
@@ -101,7 +101,7 @@ class CityRenderer(
                     inst.materials[0].set(ColorAttribute.createDiffuse(color))
                     val wx = coord.x * CS + CS / 2f
                     val wz = coord.y * CS + CS / 2f
-                    val wy = TERRAIN_H + height / 2f
+                    val wy = TERRAIN_H + 0.01f + height / 2f  // +0.01 lifts building off terrain to prevent Z-fighting
                     inst.transform.setToTranslationAndScaling(wx, wy, wz, CS - 2f, height, CS - 2f)
                 }
             }

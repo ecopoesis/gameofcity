@@ -1,5 +1,6 @@
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.InputMultiplexer
@@ -34,7 +35,7 @@ class GameOfCityApp : ApplicationAdapter() {
         PeepSpawner.spawn(engine, 50)
 
         val camera = PerspectiveCamera(67f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
-        camera.near = 1f
+        camera.near = 10f
         camera.far  = 5000f
 
         orbitController = OrbitController(camera).apply {
@@ -96,9 +97,19 @@ class GameOfCityApp : ApplicationAdapter() {
         hud.update(paused)
         inspector.update()
 
-        Gdx.gl.glDepthMask(true)  // SpriteBatch leaves depthMask=false; must restore before clear
-        ScreenUtils.clear(0.12f, 0.12f, 0.18f, 1f)
-        renderer.render()
+        // Nuclear GL state reset before 3D rendering
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight)
+        Gdx.gl.glDepthMask(true)
+        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
+        Gdx.gl.glDepthFunc(GL20.GL_LEQUAL)
+        Gdx.gl.glDisable(GL20.GL_BLEND)
+        Gdx.gl.glDisable(GL20.GL_SCISSOR_TEST)
+        Gdx.gl.glClearDepthf(1f)
+        Gdx.gl.glDepthRangef(0f, 1f)
+        Gdx.gl.glClearColor(0.12f, 0.12f, 0.18f, 1f)
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+
+        renderer.render()  // 3D + overlay
         hud.render()
         inspector.render()
     }
