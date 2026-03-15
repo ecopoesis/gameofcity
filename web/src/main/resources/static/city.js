@@ -217,6 +217,131 @@ function updatePeeps(interpolate) {
     if (peepMesh.instanceColor) peepMesh.instanceColor.needsUpdate = true;
 }
 
+// --- Inspector ---
+const inspectorEl = document.getElementById('inspector');
+const inspectorTitle = document.getElementById('inspector-title');
+const inspectorBody = document.getElementById('inspector-body');
+let selectedPeepId = null;
+let selectedBuildingId = null;
+let selectionRing = null;
+
+function showPeepInspector(peepId) {
+    if (!snapshotData) return;
+    const peep = snapshotData.peeps.find(p => p.id === peepId);
+    if (!peep) return;
+    selectedPeepId = peepId;
+    selectedBuildingId = null;
+    inspectorTitle.textContent = peep.name || `Peep #${peep.id}`;
+    inspectorBody.innerHTML = `
+        <div class="row"><span class="label">Age</span><span>${peep.age}</span></div>
+        <div class="row"><span class="label">Gender</span><span>${peep.gender}</span></div>
+        <div class="row"><span class="label">Money</span><span>$${peep.money.toFixed(1)}</span></div>
+        <div class="row"><span class="label">Home</span><span>${peep.homeId != null ? '#' + peep.homeId : 'None'}</span></div>
+        <div class="row"><span class="label">Job</span><span>${peep.jobId != null ? '#' + peep.jobId : 'None'}</span></div>
+        <div class="row"><span class="label">Brain</span><span>${peep.brainType}</span></div>
+        ${needBar('Hunger', peep.hunger, '#f38ba8')}
+        ${needBar('Fatigue', peep.fatigue, '#89b4fa')}
+        ${needBar('Social', peep.social, '#a6e3a1')}
+        ${needBar('Entertainment', peep.entertainment, '#f9e2af')}
+        ${needBar('Shelter', peep.shelter, '#cba6f7')}
+    `;
+    inspectorEl.style.display = 'block';
+    updateSelectionRing(peep.posX, peep.posY);
+}
+
+function showBuildingInspector(buildingId) {
+    if (!snapshotData) return;
+    const bld = snapshotData.map.buildings.find(b => b.id === buildingId);
+    if (!bld) return;
+    selectedPeepId = null;
+    selectedBuildingId = buildingId;
+    const residents = snapshotData.peeps.filter(p => p.homeId === buildingId);
+    const workers = snapshotData.peeps.filter(p => p.jobId === buildingId);
+    inspectorTitle.textContent = `${bld.type} #${bld.id}`;
+    inspectorBody.innerHTML = `
+        <div class="row"><span class="label">Type</span><span>${bld.type}</span></div>
+        <div class="row"><span class="label">Cells</span><span>${bld.cells.length}</span></div>
+        <div class="row"><span class="label">Residents</span><span>${residents.length}</span></div>
+        <div class="row"><span class="label">Workers</span><span>${workers.length}</span></div>
+        ${residents.length > 0 ? '<div style="margin-top:6px;color:#a6adc8">Residents:</div>' + residents.map(p => `<div>  ${p.name || 'Peep #' + p.id}</div>`).join('') : ''}
+        ${workers.length > 0 ? '<div style="margin-top:6px;color:#a6adc8">Workers:</div>' + workers.map(p => `<div>  ${p.name || 'Peep #' + p.id}</div>`).join('') : ''}
+    `;
+    inspectorEl.style.display = 'block';
+    const cell = bld.cells[0];
+    if (cell) updateSelectionRing(cell.x, cell.y);
+}
+
+function clearInspector() {
+    selectedPeepId = null;
+    selectedBuildingId = null;
+    inspectorEl.style.display = 'none';
+    if (selectionRing) { scene.remove(selectionRing); selectionRing = null; }
+}
+
+function needBar(label, value, color) {
+    const pct = Math.min(value * 100, 100).toFixed(0);
+    return `
+        <div class="row"><span class="label">${label}</span><span>${pct}%</span></div>
+        <div class="bar-wrap"><div class="bar" style="width:${pct}%;background:${color}"></div></div>
+    `;
+}
+
+function updateSelectionRing(cellX, cellY) {
+    if (selectionRing) scene.remove(selectionRing);
+    const geo = new THREE.RingGeometry(14, 16, 24);
+    geo.rotateX(-Math.PI / 2);
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+    selectionRing = new THREE.Mesh(geo, mat);
+    selectionRing.position.set(cellX * CS + CS / 2, TERRAIN_H + 0.5, cellY * CS + CS / 2);
+    scene.add(selectionRing);
+}
+
+// Update inspector data each snapshot
+function refreshInspector() {
+    if (selectedPeepId != null) showPeepInspector(selectedPeepId);
+    else if (selectedBuildingId != null) showBuildingInspector(selectedBuildingId);
+}
+
+// --- Raycasting ---
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+renderer.domElement.addEventListener('click', (e) => {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+
+    // Check peeps first
+    if (peepMesh) {
+        const hits = raycaster.intersectObject(peepMesh);
+        if (hits.length > 0 && hits[0].instanceId != null) {
+            const idx = hits[0].instanceId;
+            if (idx < peepData.length) {
+                showPeepInspector(peepData[idx].id);
+                return;
+            }
+        }
+    }
+
+    // Check buildings
+    if (buildingGroup && snapshotData) {
+        const hits = raycaster.intersectObjects(buildingGroup.children, true);
+        if (hits.length > 0) {
+            // Find which building was hit by world position → cell coord
+            const pt = hits[0].point;
+            const cx = Math.floor(pt.x / CS);
+            const cy = Math.floor(pt.z / CS);
+            const cell = snapshotData.map.cells.find(c => c.x === cx && c.y === cy && c.buildingId != null);
+            if (cell) {
+                showBuildingInspector(cell.buildingId);
+                return;
+            }
+        }
+    }
+
+    clearInspector();
+});
+
 // --- WebSocket ---
 function connect() {
     const ws = new WebSocket(`ws://${location.host}/ws`);
@@ -254,6 +379,7 @@ function connect() {
             }));
             lastPeepTime = performance.now();
             updateHUD(msg.data.tick, msg.data.peeps.length);
+            refreshInspector();
         }
 
         if (msg.type === 'peeps') {
@@ -261,6 +387,11 @@ function connect() {
             peepData = msg.peeps;
             lastPeepTime = performance.now();
             updateHUD(msg.tick, msg.peeps.length);
+            // Update selection ring for tracked peep
+            if (selectedPeepId != null) {
+                const p = peepData.find(pp => pp.id === selectedPeepId);
+                if (p) updateSelectionRing(p.x, p.y);
+            }
         }
     };
 

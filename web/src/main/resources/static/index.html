@@ -23,6 +23,40 @@
         }
         #hud .label { color: #a6adc8; }
         #hud .paused { color: #f9e2af; font-weight: bold; }
+        #inspector {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 260px;
+            background: rgba(30, 30, 46, 0.92);
+            color: #cdd6f4;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.7;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        #inspector-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #f5c2e7;
+        }
+        #inspector .row { display: flex; justify-content: space-between; }
+        #inspector .row .label { color: #a6adc8; }
+        #inspector .bar-wrap {
+            height: 6px;
+            background: #313244;
+            border-radius: 3px;
+            margin: 2px 0 4px;
+            overflow: hidden;
+        }
+        #inspector .bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
         #status {
             position: absolute;
             top: 50%;
@@ -54,6 +88,10 @@
         <div><span class="label">Peeps:</span> <span id="peepCount">0</span></div>
         <div><span class="label">Speed:</span> <span id="speed">1x</span></div>
         <div id="pausedLabel" class="paused" style="display:none">PAUSED</div>
+    </div>
+    <div id="inspector" style="display:none">
+        <div id="inspector-title">Inspector</div>
+        <div id="inspector-body"></div>
     </div>
     <script type="importmap">
     {
