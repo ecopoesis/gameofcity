@@ -56,6 +56,7 @@ fun main(args: Array<String>) {
             webSocket("/ws") {
                 broadcaster.addSession(this)
                 try {
+                    // Send initial full snapshot
                     broadcaster.sendSnapshot(this, simEngine)
                     for (frame in incoming) {
                         if (frame is Frame.Text) {
@@ -64,6 +65,31 @@ fun main(args: Array<String>) {
                     }
                 } finally {
                     broadcaster.removeSession(this)
+                }
+            }
+        }
+
+        // Launch simulation loop as a background coroutine in the application scope
+        launch {
+            var tickCounter = 0L
+            println("Simulation started (${simEngine.peeps.size} peeps)")
+            while (isActive) {
+                delay(tickDelayMs)
+                if (paused) continue
+
+                try {
+                    simEngine.step()
+                    tickCounter++
+
+                    if (broadcaster.hasClients()) {
+                        broadcaster.broadcastPeepUpdate(simEngine)
+                        if (tickCounter % 5 == 0L) {
+                            broadcaster.broadcastSnapshot(simEngine)
+                        }
+                    }
+                } catch (e: Exception) {
+                    println("Simulation error: ${e.message}")
+                    e.printStackTrace()
                 }
             }
         }
@@ -76,34 +102,19 @@ fun main(args: Array<String>) {
         println("Starting Game of City web server at $url")
     }
 
-    server.start(wait = false)
-
     if (!headless) {
-        try {
-            Desktop.getDesktop().browse(URI(url))
-        } catch (_: Exception) {
-            println("Could not open browser automatically. Open $url manually.")
-        }
-    }
-
-    // Simulation loop
-    runBlocking {
-        var tickCounter = 0L
-        while (true) {
-            delay(tickDelayMs)
-            if (paused) continue
-
-            simEngine.step()
-            tickCounter++
-
-            if (broadcaster.hasClients()) {
-                broadcaster.broadcastPeepUpdate(simEngine)
-                if (tickCounter % 5 == 0L) {
-                    broadcaster.broadcastSnapshot(simEngine)
-                }
+        // Open browser after a short delay to let server bind
+        Thread {
+            Thread.sleep(1000)
+            try {
+                Desktop.getDesktop().browse(URI(url))
+            } catch (_: Exception) {
+                println("Could not open browser automatically. Open $url manually.")
             }
-        }
+        }.start()
     }
+
+    server.start(wait = true)
 }
 
 private fun handleCommand(text: String) {
