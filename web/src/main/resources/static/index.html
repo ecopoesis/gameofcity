@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of City</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #1e1e2e; font-family: system-ui, -apple-system, sans-serif; }
+        canvas { display: block; }
+        #hud {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            color: #cdd6f4;
+            font-size: 14px;
+            background: rgba(30, 30, 46, 0.85);
+            padding: 10px 14px;
+            border-radius: 8px;
+            line-height: 1.6;
+            pointer-events: none;
+            min-width: 160px;
+        }
+        #hud .label { color: #a6adc8; }
+        #hud .paused { color: #f9e2af; font-weight: bold; }
+        #status {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #cdd6f4;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        #status .dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #a6e3a1;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div id="status"><span class="dot"></span>Connecting to simulation...</div>
+    <div id="hud" style="display:none">
+        <div><span class="label">Tick:</span> <span id="tick">0</span></div>
+        <div><span class="label">Peeps:</span> <span id="peepCount">0</span></div>
+        <div><span class="label">Speed:</span> <span id="speed">1x</span></div>
+        <div id="pausedLabel" class="paused" style="display:none">PAUSED</div>
+    </div>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="city.js"></script>
+</body>
+</html>

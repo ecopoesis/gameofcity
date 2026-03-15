@@ -1,2 +1,2 @@
 rootProject.name = "gameofcity"
-include("core", "desktop")
+include("core", "desktop", "web")
