@@ -1,12 +1,16 @@
 package tick
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import peep.Action
 import peep.Peep
 import peep.WorldView
 import world.CellCoord
 import world.WorldMap
+import kotlin.coroutines.CoroutineContext
 
-class TickEngine(val map: WorldMap) {
+class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContext = Dispatchers.Default) {
 
     val peeps: MutableMap<Int, Peep> = mutableMapOf()
     var tick: Long = 0L
@@ -23,8 +27,17 @@ class TickEngine(val map: WorldMap) {
 
     fun step() {
         // Phase 1: Perceive (worldView is always fresh)
-        // Phase 2: Decide
-        val actions = peeps.values.map { peep -> peep to peep.brain.decide(peep, worldView) }
+
+        // Phase 2: Decide (parallel when population is large enough)
+        val actions = if (peeps.size > PARALLEL_THRESHOLD) {
+            runBlocking(parallelContext) {
+                peeps.values.map { peep ->
+                    async { peep to peep.brain.decide(peep, worldView) }
+                }.map { it.await() }
+            }
+        } else {
+            peeps.values.map { peep -> peep to peep.brain.decide(peep, worldView) }
+        }
 
         // Phase 3: Validate (basic — skip conflicts for now)
 
@@ -87,5 +100,9 @@ class TickEngine(val map: WorldMap) {
             }
             is Action.Idle -> Unit
         }
+    }
+
+    companion object {
+        private const val PARALLEL_THRESHOLD = 100
     }
 }

@@ -48,6 +48,10 @@ class WorldMap(val width: Int, val height: Int) {
     fun buildingsOfType(type: BuildingType): List<Building> =
         buildings.values.filter { it.type == type }
 
+    fun clearPeepsAt() {
+        peepsAt.clear()
+    }
+
     fun isPassable(coord: CellCoord): Boolean {
         val cell = getCell(coord) ?: return false
         return cell.terrain != Terrain.Empty
