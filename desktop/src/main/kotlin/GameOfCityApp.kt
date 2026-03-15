@@ -96,6 +96,7 @@ class GameOfCityApp : ApplicationAdapter() {
         hud.update(paused)
         inspector.update()
 
+        Gdx.gl.glDepthMask(true)  // SpriteBatch leaves depthMask=false; must restore before clear
         ScreenUtils.clear(0.12f, 0.12f, 0.18f, 1f)
         renderer.render()
         hud.render()
