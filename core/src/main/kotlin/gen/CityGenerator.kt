@@ -37,7 +37,7 @@ object CityGenerator {
                 val isPerimeter = x == 0 || y == 0 || x == config.width - 1 || y == config.height - 1
                 val isRoad = isPerimeter || x % roadInterval == 0 || y % roadInterval == 0
                 if (isRoad) {
-                    map.setCell(Cell(CellCoord(x, y), Terrain.Road))
+                    map.setCell(Cell(CellCoord(x, y), Terrain.LocalRoad))
                 }
             }
         }
@@ -69,7 +69,7 @@ object CityGenerator {
                 val isPerimeter = x == 0 || y == 0 || x == config.width - 1 || y == config.height - 1
                 val isRoad = isPerimeter || x % roadInterval == 0 || y % roadInterval == 0
                 if (isRoad) {
-                    map.setCell(Cell(CellCoord(x, y), Terrain.Road))
+                    map.setCell(Cell(CellCoord(x, y), Terrain.LocalRoad))
                 }
             }
         }
@@ -79,7 +79,7 @@ object CityGenerator {
         for (x in 0 until config.width) {
             for (y in 0 until config.height) {
                 val cell = map.getCell(CellCoord(x, y)) ?: continue
-                if (cell.terrain != Terrain.Road) continue
+                if (cell.terrain != Terrain.LocalRoad) continue
                 val isPerimeter = x == 0 || y == 0 || x == config.width - 1 || y == config.height - 1
                 if (isPerimeter) continue
 
@@ -90,7 +90,7 @@ object CityGenerator {
                     val nx = (x + dx).coerceIn(1, config.width - 2)
                     val ny = (y + dy).coerceIn(1, config.height - 2)
                     // Add road at displaced position
-                    map.setCell(Cell(CellCoord(nx, ny), Terrain.Road))
+                    map.setCell(Cell(CellCoord(nx, ny), Terrain.LocalRoad))
                 }
             }
         }
@@ -100,7 +100,7 @@ object CityGenerator {
             for (x in 1 until config.width - 1) {
                 for (y in 1 until config.height - 1) {
                     val cell = map.getCell(CellCoord(x, y)) ?: continue
-                    if (cell.terrain == Terrain.Road && rng.nextFloat() < config.organicLevel * 0.15f) {
+                    if (cell.terrain == Terrain.LocalRoad && rng.nextFloat() < config.organicLevel * 0.15f) {
                         map.setCell(Cell(CellCoord(x, y), Terrain.Empty))
                     }
                 }
@@ -119,7 +119,7 @@ object CityGenerator {
                     val angle = noise.octaveNoise(cx * 0.1, cy * 0.1, 2) * Math.PI * 2
                     cx = (cx + kotlin.math.cos(angle).toInt()).coerceIn(1, config.width - 2)
                     cy = (cy + kotlin.math.sin(angle).toInt()).coerceIn(1, config.height - 2)
-                    map.setCell(Cell(CellCoord(cx, cy), Terrain.Road))
+                    map.setCell(Cell(CellCoord(cx, cy), Terrain.LocalRoad))
                 }
             }
         }
@@ -221,7 +221,7 @@ object CityGenerator {
         val neighbors = listOf(x - 1 to y, x + 1 to y, x to y - 1, x to y + 1)
         return neighbors.any { (nx, ny) ->
             val cell = map.getCell(CellCoord(nx, ny))
-            cell != null && cell.terrain == Terrain.Road
+            cell != null && cell.terrain.isRoad
         }
     }
 

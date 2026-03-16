@@ -21,12 +21,12 @@ class CityGeneratorTest : StringSpec({
         val config = CityGenConfig(width = 20, height = 20, seed = 2L)
         val map = CityGenerator.generate(config)
         for (x in 0 until 20) {
-            map.getCell(CellCoord(x, 0))!!.terrain shouldBe Terrain.Road
-            map.getCell(CellCoord(x, 19))!!.terrain shouldBe Terrain.Road
+            map.getCell(CellCoord(x, 0))!!.terrain shouldBe Terrain.LocalRoad
+            map.getCell(CellCoord(x, 19))!!.terrain shouldBe Terrain.LocalRoad
         }
         for (y in 0 until 20) {
-            map.getCell(CellCoord(0, y))!!.terrain shouldBe Terrain.Road
-            map.getCell(CellCoord(19, y))!!.terrain shouldBe Terrain.Road
+            map.getCell(CellCoord(0, y))!!.terrain shouldBe Terrain.LocalRoad
+            map.getCell(CellCoord(19, y))!!.terrain shouldBe Terrain.LocalRoad
         }
     }
 
@@ -59,7 +59,7 @@ class CityGeneratorTest : StringSpec({
         val map = CityGenerator.generate(config)
         for (x in 0 until 20) for (y in 0 until 20) {
             val cell = map.getCell(CellCoord(x, y))!!
-            if (cell.terrain == Terrain.Road) {
+            if (cell.terrain == Terrain.LocalRoad) {
                 map.isPassable(CellCoord(x, y)) shouldBe true
             }
         }

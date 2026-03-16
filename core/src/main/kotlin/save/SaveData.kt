@@ -11,7 +11,7 @@ data class ClockData(
 
 @Serializable
 data class SaveData(
-    val version: Int = 3,
+    val version: Int = 4,
     val tick: Long,
     val clock: ClockData? = null,
     val map: MapData,

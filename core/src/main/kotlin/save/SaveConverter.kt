@@ -88,7 +88,8 @@ object SaveConverter {
 
         // Restore cells (before buildings, since addBuilding overwrites terrain)
         for (c in data.map.cells) {
-            val terrain = Terrain.valueOf(c.terrain)
+            val terrainName = migrateTerrainName(c.terrain)
+            val terrain = Terrain.valueOf(terrainName)
             map.setCell(Cell(CellCoord(c.x, c.y, c.z), terrain, c.buildingId))
         }
 
@@ -165,6 +166,12 @@ object SaveConverter {
         }
 
         return engine
+    }
+
+    /** Migrate terrain names from older save versions. */
+    private fun migrateTerrainName(name: String): String = when (name) {
+        "Road" -> "LocalRoad"
+        else -> name
     }
 
     fun brainTypeName(brain: Brain): String = when (brain) {

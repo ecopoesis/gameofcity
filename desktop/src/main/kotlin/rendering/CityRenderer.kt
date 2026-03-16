@@ -121,12 +121,21 @@ class CityRenderer(
         )
 
         val TERRAIN_COLORS = mapOf(
-            Terrain.Road     to Color(0.30f, 0.30f, 0.30f, 1f),
-            Terrain.Sidewalk to Color(0.70f, 0.70f, 0.60f, 1f),
-            Terrain.Park     to Color(0.20f, 0.60f, 0.20f, 1f),
-            Terrain.Interior to Color(0.50f, 0.50f, 0.50f, 1f),
-            Terrain.Tunnel   to Color(0.20f, 0.20f, 0.20f, 1f),
-            Terrain.Empty    to Color(0.10f, 0.10f, 0.15f, 1f)
+            Terrain.Interstate    to Color(0.25f, 0.25f, 0.25f, 1f),
+            Terrain.ArterialRoad  to Color(0.31f, 0.31f, 0.31f, 1f),
+            Terrain.CollectorRoad to Color(0.37f, 0.37f, 0.37f, 1f),
+            Terrain.LocalRoad     to Color(0.50f, 0.50f, 0.50f, 1f),
+            Terrain.RuralRoad     to Color(0.55f, 0.45f, 0.33f, 1f),
+            Terrain.BusLane       to Color(0.55f, 0.18f, 0.18f, 1f),
+            Terrain.BikePath      to Color(0.13f, 0.55f, 0.13f, 1f),
+            Terrain.Sidewalk      to Color(0.70f, 0.70f, 0.60f, 1f),
+            Terrain.Park          to Color(0.20f, 0.60f, 0.20f, 1f),
+            Terrain.Interior      to Color(0.50f, 0.50f, 0.50f, 1f),
+            Terrain.Tunnel        to Color(0.20f, 0.20f, 0.20f, 1f),
+            Terrain.Parking       to Color(0.44f, 0.50f, 0.56f, 1f),
+            Terrain.RailTrack     to Color(0.27f, 0.51f, 0.71f, 1f),
+            Terrain.Platform      to Color(0.66f, 0.66f, 0.66f, 1f),
+            Terrain.Empty         to Color(0.10f, 0.10f, 0.15f, 1f)
         )
 
         val NEED_COLORS = mapOf(

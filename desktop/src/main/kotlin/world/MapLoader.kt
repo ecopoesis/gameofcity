@@ -18,7 +18,8 @@ object MapLoader {
         cells?.forEach { cell ->
             val x = cell.getInt("x")
             val y = cell.getInt("y")
-            val terrain = Terrain.valueOf(cell.getString("terrain"))
+            val terrainName = migrateTerrainName(cell.getString("terrain"))
+            val terrain = Terrain.valueOf(terrainName)
             map.setCell(Cell(CellCoord(x, y), terrain))
         }
 
@@ -34,5 +35,10 @@ object MapLoader {
         }
 
         return map
+    }
+
+    private fun migrateTerrainName(name: String): String = when (name) {
+        "Road" -> "LocalRoad"
+        else -> name
     }
 }

@@ -1,5 +1,35 @@
 package world
 
+enum class TravelMode {
+    Walk, Drive, Bike, Bus, Train;
+
+    companion object {
+        private val WALK_TERRAINS = setOf(
+            Terrain.Sidewalk, Terrain.Park, Terrain.Interior, Terrain.Platform, Terrain.Tunnel
+        )
+        private val DRIVE_TERRAINS = setOf(
+            Terrain.Interstate, Terrain.ArterialRoad, Terrain.CollectorRoad,
+            Terrain.LocalRoad, Terrain.RuralRoad, Terrain.Parking
+        )
+        private val BIKE_TERRAINS = setOf(
+            Terrain.BikePath, Terrain.LocalRoad, Terrain.CollectorRoad, Terrain.RuralRoad
+        )
+        private val BUS_TERRAINS = setOf(
+            Terrain.Interstate, Terrain.ArterialRoad, Terrain.CollectorRoad,
+            Terrain.LocalRoad, Terrain.RuralRoad, Terrain.BusLane
+        )
+        private val TRAIN_TERRAINS = setOf(Terrain.RailTrack)
+
+        fun passableTerrains(mode: TravelMode): Set<Terrain> = when (mode) {
+            Walk -> WALK_TERRAINS
+            Drive -> DRIVE_TERRAINS
+            Bike -> BIKE_TERRAINS
+            Bus -> BUS_TERRAINS
+            Train -> TRAIN_TERRAINS
+        }
+    }
+}
+
 class WorldMap(val width: Int, val height: Int) {
 
     // Ground layer (z=0): dense array for fast access
@@ -52,6 +82,13 @@ class WorldMap(val width: Int, val height: Int) {
         peepsAt.clear()
     }
 
+    /** Check passability for a specific travel mode. */
+    fun isPassable(coord: CellCoord, mode: TravelMode): Boolean {
+        val cell = getCell(coord) ?: return false
+        return cell.terrain in TravelMode.passableTerrains(mode)
+    }
+
+    /** Legacy passability: any non-empty terrain is passable. */
     fun isPassable(coord: CellCoord): Boolean {
         val cell = getCell(coord) ?: return false
         return cell.terrain != Terrain.Empty

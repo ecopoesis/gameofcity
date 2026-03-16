@@ -7,12 +7,21 @@ const TERRAIN_H = 2;
 const PEEP_H = 18;
 
 const TERRAIN_COLORS = {
-    Road:      new THREE.Color(0.30, 0.30, 0.30),
-    Sidewalk:  new THREE.Color(0.70, 0.70, 0.60),
-    Park:      new THREE.Color(0.20, 0.60, 0.20),
-    Interior:  new THREE.Color(0.50, 0.50, 0.50),
-    Tunnel:    new THREE.Color(0.20, 0.20, 0.20),
-    Empty:     new THREE.Color(0.10, 0.10, 0.15),
+    Interstate:    new THREE.Color(0.25, 0.25, 0.25),
+    ArterialRoad:  new THREE.Color(0.31, 0.31, 0.31),
+    CollectorRoad: new THREE.Color(0.37, 0.37, 0.37),
+    LocalRoad:     new THREE.Color(0.50, 0.50, 0.50),
+    RuralRoad:     new THREE.Color(0.55, 0.45, 0.33),
+    BusLane:       new THREE.Color(0.55, 0.18, 0.18),
+    BikePath:      new THREE.Color(0.13, 0.55, 0.13),
+    Sidewalk:      new THREE.Color(0.70, 0.70, 0.60),
+    Park:          new THREE.Color(0.20, 0.60, 0.20),
+    Interior:      new THREE.Color(0.50, 0.50, 0.50),
+    Tunnel:        new THREE.Color(0.20, 0.20, 0.20),
+    Parking:       new THREE.Color(0.44, 0.50, 0.56),
+    RailTrack:     new THREE.Color(0.27, 0.51, 0.71),
+    Platform:      new THREE.Color(0.66, 0.66, 0.66),
+    Empty:         new THREE.Color(0.10, 0.10, 0.15),
 };
 
 // Subtype colors (matching plan spec)

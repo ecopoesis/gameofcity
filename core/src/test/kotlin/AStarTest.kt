@@ -8,7 +8,7 @@ class AStarTest {
 
     private fun makeMap(vararg roads: Pair<Int, Int>): WorldMap {
         val map = WorldMap(10, 10)
-        roads.forEach { (x, y) -> map.setCell(Cell(CellCoord(x, y), Terrain.Road)) }
+        roads.forEach { (x, y) -> map.setCell(Cell(CellCoord(x, y), Terrain.LocalRoad)) }
         return map
     }
 
