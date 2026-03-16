@@ -33,6 +33,9 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
     var immigrantsToday: Int = 0; private set
     var emigrantsToday: Int = 0; private set
 
+    val eventLog: EventLog = EventLog()
+    var stats: CityStats = CityStats(); private set
+
     private val worldView = object : WorldView {
         override val map: WorldMap get() = this@TickEngine.map
         override val peeps: Map<Int, Peep> get() = this@TickEngine.peeps
@@ -278,6 +281,8 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                     } else {
                         peep.rentGraceDays++
                         if (peep.rentGraceDays >= 3) {
+                            eventLog.add(SimEvent(tick, clock.day, EventType.Eviction,
+                                "${peep.name} was evicted", listOf(peep.id)))
                             peep.homeId = null  // evicted
                             peep.rentGraceDays = 0
                         }
@@ -334,10 +339,16 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             map.buildings.values.filter { it.isWorkplace }.forEach { bld ->
                 val workers = peeps.values.count { it.jobId == bld.id }
                 val halfCap = bld.capacity / 2
+                val oldWage = bld.wage
                 if (workers < halfCap) {
                     bld.wage = (bld.wage + 1).coerceAtMost((bld.subtype?.baseWage ?: 10) * 2)
                 } else if (workers > (bld.capacity * 0.9).toInt()) {
                     bld.wage = (bld.wage - 1).coerceAtLeast((bld.subtype?.baseWage ?: 1) / 2)
+                }
+                if (bld.wage != oldWage) {
+                    val reason = if (bld.wage > oldWage) "understaffed" else "overstaffed"
+                    eventLog.add(SimEvent(tick, clock.day, EventType.WageChange,
+                        "${bld.subtype?.name ?: bld.type.name} raised wages to ${bld.wage} ($reason)"))
                 }
             }
         }
@@ -355,6 +366,9 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                         }
                         if (betterJob != null && (tick % 5 == peep.id.toLong() % 5)) {
                             // ~20% chance (1 in 5 days)
+                            eventLog.add(SimEvent(tick, clock.day, EventType.JobChange,
+                                "${peep.name} quit ${currentJob.subtype?.name ?: "job"}, hired at ${betterJob.subtype?.name ?: "job"} (+${betterJob.wage - currentJob.wage} wage)",
+                                listOf(peep.id)))
                             peep.jobId = betterJob.id
                         }
                     }
@@ -426,6 +440,8 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 if (candidate != null && (tick + peep.id.toLong()) % 20 == 0L) { // ~5% daily
                     val other = peeps[candidate.key] ?: return@forEach
                     // Form partnership
+                    eventLog.add(SimEvent(tick, clock.day, EventType.Partnership,
+                        "${peep.name} and ${other.name} moved in together", listOf(peep.id, other.id)))
                     peep.partnerId = other.id
                     other.partnerId = peep.id
                     peep.friendships[other.id] = 0.85f
@@ -465,6 +481,9 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 val friendship = peep.friendships[partnerId] ?: 0f
                 if (friendship < 0.5f) {
                     val partner = peeps[partnerId]
+                    eventLog.add(SimEvent(tick, clock.day, EventType.Breakup,
+                        "${peep.name} and ${partner?.name ?: "unknown"} broke up",
+                        listOfNotNull(peep.id, partner?.id)))
                     // Dissolve household
                     val hId = peep.householdId
                     if (hId != null) {
@@ -516,14 +535,17 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             }
 
             // Death
-            val dead = mutableListOf<Int>()
+            val dead = mutableListOf<Pair<Int, String>>()
             peeps.values.forEach { peep ->
                 val rate = Demographics.mortalityRate(peep.age, peep.needs.health)
                 if (rate > 0f && (tick + peep.id.toLong()) % ((1f / rate).toInt().coerceAtLeast(1)) == 0L) {
-                    dead.add(peep.id)
+                    dead.add(peep.id to "${peep.name} passed away at age ${peep.age}")
                 }
             }
-            dead.forEach { id -> removePeep(id); deathsToday++ }
+            dead.forEach { (id, desc) ->
+                eventLog.add(SimEvent(tick, clock.day, EventType.Death, desc, listOf(id)))
+                removePeep(id); deathsToday++
+            }
 
             // Birth
             households.values.toList().forEach { household ->
@@ -547,6 +569,9 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                             )
                             addPeep(child)
                             household.addMember(childId)
+                            eventLog.add(SimEvent(tick, clock.day, EventType.Birth,
+                                "Baby ${child.name} born to ${a.name} and ${b.name}",
+                                listOf(childId, a.id, b.id)))
                             birthsToday++
                         }
                     }
@@ -579,6 +604,8 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                         schedule = ScheduleType.Worker
                     )
                     addPeep(immigrant)
+                    eventLog.add(SimEvent(tick, clock.day, EventType.Immigration,
+                        "Newcomer ${immigrant.name} arrived in the city", listOf(id)))
                     immigrantsToday++
                 }
             }
@@ -593,8 +620,15 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             }
             val emigrants = peeps.values
                 .filter { it.criticalDays >= 5 && (tick + it.id.toLong()) % 10 == 0L } // ~10% daily
-                .map { it.id }
-            emigrants.forEach { id -> removePeep(id); emigrantsToday++ }
+                .map { it.id to it.name }
+            emigrants.forEach { (id, name) ->
+                eventLog.add(SimEvent(tick, clock.day, EventType.Emigration,
+                    "$name left the city (unhappy)", listOf(id)))
+                removePeep(id); emigrantsToday++
+            }
+
+            // Compute aggregate stats daily
+            stats = CityStats.compute(this)
         }
     }
 

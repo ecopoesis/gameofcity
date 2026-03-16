@@ -557,6 +557,8 @@ function connect() {
         statusEl.style.display = 'none';
         hudEl.style.display = 'block';
         document.getElementById('cmdbar').style.display = 'flex';
+        document.getElementById('statsbar').style.display = 'block';
+        document.getElementById('eventlog').style.display = 'block';
     };
 
     ws.onclose = () => {
@@ -605,6 +607,11 @@ function connect() {
                 const p = peepData.find(pp => pp.id === selectedPeepId);
                 if (p) updateSelectionRing(p.x, p.y);
             }
+        }
+
+        if (msg.type === 'events') {
+            updateEventLog(msg.events);
+            updateStatsBar(msg.stats);
         }
     };
 
@@ -677,6 +684,25 @@ function animate() {
     renderer.render(scene, camera);
 }
 animate();
+
+// --- Event Log + Stats ---
+function updateEventLog(events) {
+    const body = document.getElementById('eventlog-body');
+    if (!body || !events) return;
+    body.innerHTML = events.slice(-15).reverse().map(e =>
+        `<div class="event-item"><span class="event-day">Day ${e.day}</span> ${e.description}</div>`
+    ).join('');
+}
+
+function updateStatsBar(s) {
+    if (!s) return;
+    const el = (id, text) => { const e = document.getElementById(id); if (e) e.textContent = text; };
+    el('statPop', `Pop: ${s.population}`);
+    el('statEmp', `Emp: ${(s.employmentRate * 100).toFixed(0)}%`);
+    el('statHappy', `Happy: ${(s.avgHappiness * 100).toFixed(0)}%`);
+    el('statHomeless', `Homeless: ${s.homeless}`);
+    el('statGini', `Gini: ${(s.gini * 100).toFixed(0)}%`);
+}
 
 // --- Resize ---
 window.addEventListener('resize', () => {

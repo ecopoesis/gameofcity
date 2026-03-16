@@ -1,6 +1,7 @@
 import io.ktor.websocket.*
 import kotlinx.serialization.json.Json
 import save.*
+import tick.CityStats
 import tick.TickEngine
 import java.util.concurrent.ConcurrentHashMap
 
@@ -81,6 +82,34 @@ class SimBroadcaster(private val json: Json) {
             }
         }
         dead.forEach { sessions.remove(it) }
+    }
+
+    suspend fun broadcastEvents(engine: TickEngine) {
+        val events = engine.eventLog.recent(20).map { e ->
+            EventData(e.tick, e.day, e.type.name, e.description, e.involvedPeeps)
+        }
+        val s = engine.stats
+        val statsData = StatsData(
+            population = s.population,
+            births = s.birthsToday,
+            deaths = s.deathsToday,
+            immigrants = s.immigrantsToday,
+            emigrants = s.emigrantsToday,
+            employmentRate = s.employmentRate,
+            unemployed = s.unemployedCount,
+            avgWage = s.avgWage,
+            housingOccupancy = s.housingOccupancy,
+            homeless = s.homelessCount,
+            avgRent = s.avgRent,
+            avgHappiness = s.avgHappiness,
+            medianMoney = s.medianMoney,
+            gini = s.giniCoefficient,
+            avgFriends = s.avgFriends,
+            households = s.householdCount,
+            singles = s.singlesCount
+        )
+        val message = json.encodeToString(EventsMessage.serializer(), EventsMessage(events = events, stats = statsData))
+        broadcast(message)
     }
 
     fun hasClients(): Boolean = sessions.isNotEmpty()

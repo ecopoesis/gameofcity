@@ -22,6 +22,8 @@ class HUD(private val engine: TickEngine, private val skin: Skin) {
     private val speedLabel = Label("", skin)
     private val brainLabel = Label("", skin)
     private val pauseLabel = Label("[PAUSED]", skin).also { it.color = Color.YELLOW }
+    private val statsLabel = Label("", skin).also { it.color = Color(0.7f, 0.8f, 0.9f, 1f) }
+    private val eventLabels = (0 until 5).map { Label("", skin).also { it.color = Color(0.8f, 0.8f, 0.7f, 0.9f) } }
 
     var speedFactor: Float = 1f
     var brainType: String = "Utility"
@@ -169,6 +171,22 @@ class HUD(private val engine: TickEngine, private val skin: Skin) {
         panel.pack()
         panel.setPosition(10f, 10f)
         stage.addActor(panel)
+
+        // Stats bar (second row below stats)
+        val statsRow = Table()
+        statsRow.setFillParent(true)
+        statsRow.top().padTop(48f).padLeft(10f)
+        statsRow.add(statsLabel).expandX().left()
+        stage.addActor(statsRow)
+
+        // Event ticker at bottom
+        val tickerTable = Table()
+        tickerTable.setFillParent(true)
+        tickerTable.bottom().padBottom(6f).padLeft(10f)
+        for (lbl in eventLabels) {
+            tickerTable.add(lbl).expandX().left().row()
+        }
+        stage.addActor(tickerTable)
     }
 
     fun update(paused: Boolean) {
@@ -178,6 +196,23 @@ class HUD(private val engine: TickEngine, private val skin: Skin) {
         speedLabel.setText("Speed: ${String.format("%.1f", speedFactor)}x")
         brainLabel.setText("Brain: $brainType")
         pauseLabel.isVisible = paused
+
+        // Compact stats
+        val s = engine.stats
+        val empPct = (s.employmentRate * 100).toInt()
+        val hapPct = (s.avgHappiness * 100).toInt()
+        val giniPct = (s.giniCoefficient * 100).toInt()
+        statsLabel.setText("Emp: $empPct%  Homeless: ${s.homelessCount}  Happy: $hapPct%  Gini: $giniPct%  HH: ${s.householdCount}")
+
+        // Event ticker: last 5 events
+        val recent = engine.eventLog.recent(5)
+        for (i in eventLabels.indices) {
+            if (i < recent.size) {
+                eventLabels[i].setText("Day ${recent[i].day}: ${recent[i].description}")
+            } else {
+                eventLabels[i].setText("")
+            }
+        }
     }
 
     fun render() { stage.act(); stage.draw() }

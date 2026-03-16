@@ -91,6 +91,9 @@ fun main(args: Array<String>) {
                         if (tickCounter % 5 == 0L) {
                             broadcaster.broadcastSnapshot(simEngine)
                         }
+                        if (tickCounter % 60 == 0L) {
+                            broadcaster.broadcastEvents(simEngine)
+                        }
                     }
                 } catch (e: Exception) {
                     println("Simulation error: ${e.message}")

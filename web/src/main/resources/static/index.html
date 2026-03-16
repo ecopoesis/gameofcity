@@ -138,6 +138,38 @@
         #cmdbar .act { color: #cdd6f4; margin-right: 12px; }
         #hud { top: 40px; }
         #inspector { top: 40px; }
+        #statsbar {
+            position: absolute;
+            bottom: 160px;
+            left: 12px;
+            color: #a6c8e0;
+            font-size: 12px;
+            background: rgba(30, 30, 46, 0.85);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        #statsbar span { margin-right: 14px; }
+        #eventlog {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            width: 400px;
+            max-height: 140px;
+            background: rgba(30, 30, 46, 0.88);
+            color: #cdd6f4;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 12px;
+            overflow-y: auto;
+        }
+        #eventlog-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #f5c2e7;
+            margin-bottom: 4px;
+        }
+        #eventlog .event-item { line-height: 1.5; color: #bac2de; }
+        #eventlog .event-day { color: #a6adc8; font-weight: bold; }
         #status {
             position: absolute;
             top: 50%;
@@ -205,9 +237,17 @@
         </div>
         <button id="generateBtn">Generate City</button>
     </div>
+    <div id="statsbar" style="display:none">
+        <span id="statPop"></span> <span id="statEmp"></span> <span id="statHappy"></span>
+        <span id="statHomeless"></span> <span id="statGini"></span>
+    </div>
     <div id="inspector" style="display:none">
         <div id="inspector-title">Inspector</div>
         <div id="inspector-body"></div>
+    </div>
+    <div id="eventlog" style="display:none">
+        <div id="eventlog-title">Events</div>
+        <div id="eventlog-body"></div>
     </div>
     <script type="importmap">
     {

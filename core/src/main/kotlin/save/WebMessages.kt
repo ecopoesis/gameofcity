@@ -42,3 +42,40 @@ data class CommandMessage(
     val value: Int? = null,
     val stringValue: String? = null
 )
+
+@Serializable
+data class EventData(
+    val tick: Long,
+    val day: Int,
+    val type: String,
+    val description: String,
+    val peepIds: List<Int> = emptyList()
+)
+
+@Serializable
+data class StatsData(
+    val population: Int = 0,
+    val births: Int = 0,
+    val deaths: Int = 0,
+    val immigrants: Int = 0,
+    val emigrants: Int = 0,
+    val employmentRate: Float = 0f,
+    val unemployed: Int = 0,
+    val avgWage: Float = 0f,
+    val housingOccupancy: Float = 0f,
+    val homeless: Int = 0,
+    val avgRent: Float = 0f,
+    val avgHappiness: Float = 0f,
+    val medianMoney: Float = 0f,
+    val gini: Float = 0f,
+    val avgFriends: Float = 0f,
+    val households: Int = 0,
+    val singles: Int = 0
+)
+
+@Serializable
+data class EventsMessage(
+    val type: String = "events",
+    val events: List<EventData>,
+    val stats: StatsData
+)
