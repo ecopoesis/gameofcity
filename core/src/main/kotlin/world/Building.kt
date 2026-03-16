@@ -55,4 +55,27 @@ data class Building(
     val isFull: Boolean get() = currentOccupants.size >= capacity
 
     val vacancies: Int get() = (capacity - currentOccupants.size).coerceAtLeast(0)
+
+    var wage: Int = subtype?.baseWage ?: 0
+
+    val isWorkplace: Boolean get() = subtype?.baseWage != null && subtype.baseWage > 0
+
+    val workerCount: Int get() = currentOccupants.size  // during work hours approximates workers
+
+    val isHiring: Boolean get() = isWorkplace && !isFull
+}
+
+val BuildingSubtype.baseWage: Int get() = when (this) {
+    BuildingSubtype.Office -> 15
+    BuildingSubtype.Hospital -> 18
+    BuildingSubtype.School -> 14
+    BuildingSubtype.Factory -> 10
+    BuildingSubtype.Workshop -> 12
+    BuildingSubtype.Warehouse -> 8
+    BuildingSubtype.Library -> 10
+    BuildingSubtype.Restaurant -> 6
+    BuildingSubtype.Cafe -> 5
+    BuildingSubtype.Shop -> 7
+    BuildingSubtype.GroceryStore -> 6
+    else -> 0
 }

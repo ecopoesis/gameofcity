@@ -8,6 +8,7 @@ import peep.Peep
 import peep.WorldView
 import world.CellCoord
 import world.WorldMap
+import world.baseWage
 import kotlin.coroutines.CoroutineContext
 
 class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContext = Dispatchers.Default) {
@@ -95,14 +96,18 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 }
             }
             is Action.Eat -> {
-                n.hunger = (n.hunger - 0.5f).coerceAtLeast(0f)
-                n.thirst = (n.thirst - 0.2f).coerceAtLeast(0f)
-                peep.money -= 5f
+                if (peep.money >= 5f) {
+                    n.hunger = (n.hunger - 0.5f).coerceAtLeast(0f)
+                    n.thirst = (n.thirst - 0.2f).coerceAtLeast(0f)
+                    peep.money -= 5f
+                }
             }
             is Action.Drink -> {
-                n.thirst = (n.thirst - 0.5f).coerceAtLeast(0f)
-                n.friendship = (n.friendship - 0.1f).coerceAtLeast(0f)
-                peep.money -= 3f
+                if (peep.money >= 3f) {
+                    n.thirst = (n.thirst - 0.5f).coerceAtLeast(0f)
+                    n.friendship = (n.friendship - 0.1f).coerceAtLeast(0f)
+                    peep.money -= 3f
+                }
             }
             is Action.Sleep -> {
                 n.sleep = (n.sleep - 0.5f).coerceAtLeast(0f)
@@ -111,7 +116,8 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             }
             is Action.Work -> {
                 n.recognition = (n.recognition - 0.1f).coerceAtLeast(0f)
-                peep.money += 1f
+                val building = map.buildings[action.buildingId]
+                peep.money += (building?.wage ?: 1).toFloat()
             }
             is Action.Socialize -> {
                 n.friendship = (n.friendship - 0.3f).coerceAtLeast(0f)
@@ -123,13 +129,17 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 }
             }
             is Action.Shop -> {
-                n.accomplishment = (n.accomplishment - 0.2f).coerceAtLeast(0f)
-                n.status = (n.status - 0.1f).coerceAtLeast(0f)
-                peep.money -= 10f
+                if (peep.money >= 10f) {
+                    n.accomplishment = (n.accomplishment - 0.2f).coerceAtLeast(0f)
+                    n.status = (n.status - 0.1f).coerceAtLeast(0f)
+                    peep.money -= 10f
+                }
             }
             is Action.Heal -> {
-                n.health = (n.health - 0.5f).coerceAtLeast(0f)
-                peep.money -= 20f
+                if (peep.money >= 20f) {
+                    n.health = (n.health - 0.5f).coerceAtLeast(0f)
+                    peep.money -= 20f
+                }
             }
             is Action.Learn -> {
                 n.learning = (n.learning - 0.3f).coerceAtLeast(0f)
@@ -145,9 +155,11 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 n.friendship = (n.friendship - 0.1f).coerceAtLeast(0f)
             }
             is Action.Watch -> {
-                n.creativity = (n.creativity - 0.15f).coerceAtLeast(0f)
-                n.community = (n.community - 0.2f).coerceAtLeast(0f)
-                peep.money -= 8f
+                if (peep.money >= 8f) {
+                    n.creativity = (n.creativity - 0.15f).coerceAtLeast(0f)
+                    n.community = (n.community - 0.2f).coerceAtLeast(0f)
+                    peep.money -= 8f
+                }
             }
             is Action.Idle -> Unit
         }
@@ -198,6 +210,47 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             if (isNewDay && peep.homeId != null) {
                 peep.money -= 20f
                 if (peep.money < 0f) peep.homeId = null  // evicted
+            }
+        }
+
+        // Wage adjustment (every sim-hour = 60 ticks)
+        if (tick > 0 && tick % 60 == 0L) {
+            map.buildings.values.filter { it.isWorkplace }.forEach { bld ->
+                val workers = peeps.values.count { it.jobId == bld.id }
+                val halfCap = bld.capacity / 2
+                if (workers < halfCap) {
+                    bld.wage = (bld.wage + 1).coerceAtMost((bld.subtype?.baseWage ?: 10) * 2)
+                } else if (workers > (bld.capacity * 0.9).toInt()) {
+                    bld.wage = (bld.wage - 1).coerceAtLeast((bld.subtype?.baseWage ?: 1) / 2)
+                }
+            }
+        }
+
+        // Job switching (daily evaluation)
+        if (clock.isNewDay()) {
+            val hiringBuildings = map.buildings.values.filter { it.isHiring }.toList()
+            peeps.values.forEach { peep ->
+                if (peep.jobId != null) {
+                    val currentJob = map.buildings[peep.jobId!!]
+                    if (currentJob != null) {
+                        // Look for better-paying job
+                        val betterJob = hiringBuildings.firstOrNull { b ->
+                            b.id != peep.jobId && b.wage > currentJob.wage * 1.3
+                        }
+                        if (betterJob != null && (tick % 5 == peep.id.toLong() % 5)) {
+                            // ~20% chance (1 in 5 days)
+                            peep.jobId = betterJob.id
+                        }
+                    }
+                } else {
+                    // Unemployed — find a job
+                    val nearestJob = hiringBuildings
+                        .sortedBy { it.cells.first().distanceTo(peep.position) }
+                        .firstOrNull()
+                    if (nearestJob != null) {
+                        peep.jobId = nearestJob.id
+                    }
+                }
             }
         }
 

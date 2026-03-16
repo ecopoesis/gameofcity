@@ -243,6 +243,7 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         row("Category", b.type.name)
         if (b.subtype != null) row("Subtype", b.subtype!!.name)
         row("Cells", "${b.cells.size}")
+        if (b.isWorkplace) row("Wage", "$${b.wage}/tick")
 
         // Show residents and workers
         val residents = engine.peeps.values.filter { it.homeId == b.id }

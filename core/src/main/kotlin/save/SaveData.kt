@@ -43,7 +43,8 @@ data class BuildingData(
     val cells: List<CoordData>,
     val capacity: Int = 0,
     val occupants: Int = 0,
-    val isFull: Boolean = false
+    val isFull: Boolean = false,
+    val wage: Int = 0
 )
 
 @Serializable

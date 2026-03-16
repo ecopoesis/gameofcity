@@ -25,7 +25,8 @@ object SaveConverter {
                 cells = b.cells.map { CoordData(it.x, it.y, it.z) },
                 capacity = b.capacity,
                 occupants = b.currentOccupants.size,
-                isFull = b.isFull
+                isFull = b.isFull,
+                wage = b.wage
             )
         }
 
@@ -102,6 +103,7 @@ object SaveConverter {
             )
             // Register building without overwriting cell terrain (already restored)
             map.buildings[building.id] = building
+            if (b.wage > 0) building.wage = b.wage
         }
 
         val engine = TickEngine(map)
