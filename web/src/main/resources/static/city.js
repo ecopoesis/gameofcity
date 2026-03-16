@@ -359,8 +359,8 @@ function connect() {
                 buildCity(msg.data);
                 initPeeps(msg.data.peeps.length);
                 // Center camera on map on first load
-                const cx = msg.data.width * CS / 2;
-                const cz = msg.data.height * CS / 2;
+                const cx = msg.data.map.width * CS / 2;
+                const cz = msg.data.map.height * CS / 2;
                 controls.target.set(cx, 0, cz);
                 camera.position.set(cx + 300, 400, cz + 300);
                 controls.update();
