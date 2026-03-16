@@ -147,13 +147,6 @@ function buildCity(data) {
 
     scene.add(terrainGroup);
     scene.add(buildingGroup);
-
-    // Center camera on map
-    const cx = mapData.width * CS / 2;
-    const cz = mapData.height * CS / 2;
-    controls.target.set(cx, 0, cz);
-    camera.position.set(cx + 300, 400, cz + 300);
-    controls.update();
 }
 
 // --- Peep rendering ---
@@ -365,6 +358,12 @@ function connect() {
             if (!mapBuilt) {
                 buildCity(msg.data);
                 initPeeps(msg.data.peeps.length);
+                // Center camera on map on first load
+                const cx = msg.data.width * CS / 2;
+                const cz = msg.data.height * CS / 2;
+                controls.target.set(cx, 0, cz);
+                camera.position.set(cx + 300, 400, cz + 300);
+                controls.update();
                 mapBuilt = true;
             } else {
                 // Rebuild on generate
