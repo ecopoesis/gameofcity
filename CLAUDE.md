@@ -47,7 +47,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 - Building index: `buildings: HashMap<BuildingId, Building>`
 
 ### Brain interface
-`Brain` is swappable per-Peep. Current implementations: `IdleBrain`, `RandomBrain`. `UtilityBrain` (Phase 2) scores actions by need urgency.
+`Brain` is swappable per-Peep. Implementations: `IdleBrain`, `RandomBrain`, `UtilityBrain` (priority-based), `PyramidBrain` (strict Maslow hierarchy), `WaveBrain` (weighted overlapping waves with top-3 random selection).
 
 ## GitHub Workflow
 
@@ -67,18 +67,31 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | 3 — Inspector UI + Economy | #2 | Open |
 | 4 — 3D Camera + Relationships | #3 | Open |
 | 5 — Procedural Generation + Polish | #4 | Open |
+| Maslow Needs | #13 | ✅ Done |
+| Building Subtypes + Actions | #14 | ✅ Done |
+| PyramidBrain | #15 | ✅ Done |
+| WaveBrain | #16 | ✅ Done |
+| Brain Type + Renderers | #17 | ✅ Done |
+| City Generation Improvements | #18 | ✅ Done |
 
 ## Key Files
 
 | File | Purpose |
 |---|---|
 | `core/src/main/kotlin/world/WorldMap.kt` | City grid + spatial index |
-| `core/src/main/kotlin/world/Building.kt` | Building data model + `BuildingType` enum |
+| `core/src/main/kotlin/world/Building.kt` | Building data model + `BuildingType`/`BuildingSubtype` enums |
 | `core/src/main/kotlin/peep/Peep.kt` | Citizen data model |
+| `core/src/main/kotlin/peep/Needs.kt` | `MaslowNeeds` (5 Maslow levels) + `NeedType` enum |
 | `core/src/main/kotlin/peep/Brain.kt` | Strategy interface + `WorldView` + `RandomBrain`/`IdleBrain` |
+| `core/src/main/kotlin/peep/UtilityBrain.kt` | Original goal-driven brain |
+| `core/src/main/kotlin/peep/PyramidBrain.kt` | Strict Maslow hierarchy brain |
+| `core/src/main/kotlin/peep/WaveBrain.kt` | Kenrick's overlapping waves brain |
+| `core/src/main/kotlin/peep/NeedActionMapper.kt` | Maps NeedType → BuildingSubtype → Action |
+| `core/src/main/kotlin/peep/NavigationHelper.kt` | Shared pathfinding queue for brains |
 | `core/src/main/kotlin/tick/TickEngine.kt` | 5-phase simulation pipeline |
 | `core/src/main/kotlin/pathfind/AStarPathfinder.kt` | Grid pathfinding |
+| `core/src/main/kotlin/gen/CityGenerator.kt` | Procedural city gen (grid + organic roads) |
 | `desktop/src/main/kotlin/GameOfCityApp.kt` | Main game loop, camera pan |
-| `desktop/src/main/kotlin/rendering/CityRenderer.kt` | ShapeRenderer 2D city draw |
+| `desktop/src/main/kotlin/rendering/CityRenderer.kt` | 3D city render with subtype colors |
 | `desktop/src/main/kotlin/world/MapLoader.kt` | JSON → WorldMap (libGDX JsonReader) |
 | `assets/maps/starter.json` | 20×20 hand-authored starter city |
