@@ -41,10 +41,11 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             peeps.values.map { peep -> peep to peep.brain.decide(peep, worldView) }
         }
 
-        // Phase 3: Validate (basic — skip conflicts for now)
+        // Phase 3: Validate — reject actions targeting full buildings
+        val validated = validate(actions)
 
         // Phase 4: Execute
-        actions.forEach { (peep, action) ->
+        validated.forEach { (peep, action) ->
             peep.lastAction = action
             execute(peep, action)
         }
@@ -54,6 +55,33 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
 
         clock.advance()
         tick++
+    }
+
+    private fun validate(actions: List<Pair<Peep, Action>>): List<Pair<Peep, Action>> {
+        // Track how many peeps are trying to enter each building this tick
+        val buildingDemand = mutableMapOf<Int, Int>()
+        return actions.map { (peep, action) ->
+            val buildingId = action.targetBuildingId()
+            if (buildingId != null) {
+                val building = map.buildings[buildingId]
+                if (building != null && building.isFull) {
+                    // Already at capacity — reject
+                    peep to Action.Idle
+                } else if (building != null) {
+                    val demand = buildingDemand.getOrPut(buildingId) { building.currentOccupants.size }
+                    if (demand >= building.capacity) {
+                        peep to Action.Idle
+                    } else {
+                        buildingDemand[buildingId] = demand + 1
+                        peep to action
+                    }
+                } else {
+                    peep to action
+                }
+            } else {
+                peep to action
+            }
+        }
     }
 
     private fun execute(peep: Peep, action: Action) {
@@ -170,6 +198,16 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             if (isNewDay && peep.homeId != null) {
                 peep.money -= 20f
                 if (peep.money < 0f) peep.homeId = null  // evicted
+            }
+        }
+
+        // Update building occupancy from peep positions
+        map.buildings.values.forEach { it.currentOccupants.clear() }
+        peeps.values.forEach { peep ->
+            val cell = map.getCell(peep.position)
+            val bldgId = cell?.buildingId
+            if (bldgId != null) {
+                map.buildings[bldgId]?.currentOccupants?.add(peep.id)
             }
         }
 

@@ -456,6 +456,8 @@ function showBuildingInspector(buildingId) {
         <div class="row"><span class="label">Category</span><span>${bld.type}</span></div>
         ${bld.subtype ? `<div class="row"><span class="label">Subtype</span><span>${bld.subtype}</span></div>` : ''}
         <div class="row"><span class="label">Cells</span><span>${bld.cells.length}</span></div>
+        <div class="row"><span class="label">Capacity</span><span>${bld.capacity || '?'}</span></div>
+        <div class="row"><span class="label">Occupants</span><span>${bld.occupants || 0}${bld.isFull ? ' <span style="color:#f38ba8">FULL</span>' : ''}</span></div>
         <div class="row"><span class="label">Residents</span><span>${residents.length}</span></div>
         <div class="row"><span class="label">Workers</span><span>${workers.length}</span></div>
         ${residents.length > 0 ? '<div style="margin-top:6px;color:#a6adc8">Residents:</div>' + residents.map(p => `<div>  ${p.name || 'Peep #' + p.id}</div>`).join('') : ''}

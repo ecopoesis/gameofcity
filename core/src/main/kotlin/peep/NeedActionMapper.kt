@@ -57,16 +57,24 @@ object NeedActionMapper {
     fun findAction(needType: NeedType, peep: Peep, map: WorldMap): ActionCandidate? {
         val subtypeMappings = needToMappings[needType] ?: return null
 
+        // Collect all matching buildings, ranked by distance, skipping full ones
+        val candidates = mutableListOf<ActionCandidate>()
+
         for (m in subtypeMappings) {
-            val building = map.buildings.values.firstOrNull { it.subtype == m.subtype }
-            if (building != null) {
-                return ActionCandidate(building, m.actionFactory(building.id), m.needs)
+            val buildings = map.buildings.values
+                .filter { it.subtype == m.subtype && !it.isFull }
+                .sortedBy { b -> b.cells.first().distanceTo(peep.position) }
+
+            for (building in buildings) {
+                candidates.add(ActionCandidate(building, m.actionFactory(building.id), m.needs))
             }
         }
 
+        if (candidates.isNotEmpty()) return candidates.first()
+
         // Fallback: try matching by category (for buildings without subtypes)
         for (m in subtypeMappings) {
-            val building = map.buildings.values.firstOrNull { it.type == m.subtype.category }
+            val building = map.buildings.values.firstOrNull { it.type == m.subtype.category && !it.isFull }
             if (building != null) {
                 return ActionCandidate(building, m.actionFactory(building.id), m.needs)
             }

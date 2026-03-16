@@ -40,7 +40,10 @@ data class BuildingData(
     val id: Int,
     val type: String,
     val subtype: String? = null,
-    val cells: List<CoordData>
+    val cells: List<CoordData>,
+    val capacity: Int = 0,
+    val occupants: Int = 0,
+    val isFull: Boolean = false
 )
 
 @Serializable

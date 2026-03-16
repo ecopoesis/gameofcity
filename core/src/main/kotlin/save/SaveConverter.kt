@@ -22,7 +22,10 @@ object SaveConverter {
                 id = b.id,
                 type = b.type.name,
                 subtype = b.subtype?.name,
-                cells = b.cells.map { CoordData(it.x, it.y, it.z) }
+                cells = b.cells.map { CoordData(it.x, it.y, it.z) },
+                capacity = b.capacity,
+                occupants = b.currentOccupants.size,
+                isFull = b.isFull
             )
         }
 

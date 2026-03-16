@@ -18,4 +18,18 @@ sealed class Action {
     data class Relax(val buildingId: BuildingId) : Action()
     data class Watch(val buildingId: BuildingId) : Action()
     object Idle : Action()
+
+    fun targetBuildingId(): Int? = when (this) {
+        is Eat -> buildingId
+        is Drink -> buildingId
+        is Sleep -> buildingId
+        is Work -> buildingId
+        is Shop -> buildingId
+        is Heal -> buildingId
+        is Learn -> buildingId
+        is Exercise -> buildingId
+        is Relax -> buildingId
+        is Watch -> buildingId
+        is MoveTo, is Socialize, Idle -> null
+    }
 }

@@ -72,10 +72,7 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
     }
 
     private fun updateBuilding(b: Building) {
-        val inside = engine.peeps.values.count { p ->
-            engine.map.getCell(p.position)?.buildingId == b.id
-        }
-        insideLabel?.setText("$inside")
+        insideLabel?.setText("${b.currentOccupants.size} / ${b.capacity}${if (b.isFull) "  FULL" else ""}")
     }
 
     // ---- Build windows ----
@@ -242,7 +239,7 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         val inside = engine.peeps.values.count { p ->
             engine.map.getCell(p.position)?.buildingId == b.id
         }
-        insideLabel = row("Inside now", "$inside")
+        insideLabel = row("Inside now", "$inside / ${b.capacity}${if (b.isFull) "  FULL" else ""}")
         row("Category", b.type.name)
         if (b.subtype != null) row("Subtype", b.subtype!!.name)
         row("Cells", "${b.cells.size}")
