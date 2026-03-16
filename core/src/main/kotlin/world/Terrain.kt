@@ -18,12 +18,19 @@ enum class Terrain {
     Empty
 }
 
+/** General road check (any road class). */
 val Terrain.isRoad: Boolean get() = this in ROAD_TERRAINS
-val Terrain.isWalkable: Boolean get() = this in WALKABLE_TERRAINS
-val Terrain.isDrivable: Boolean get() = this in DRIVABLE_TERRAINS
-val Terrain.isBikeable: Boolean get() = this in BIKEABLE_TERRAINS
 
-/** Speed limit in cells/tick for vehicles on this terrain. 0 = not drivable. */
+/** Walkable by pedestrians — delegates to TravelMode.Walk passable set. */
+val Terrain.isWalkable: Boolean get() = this in TravelMode.passableTerrains(TravelMode.Walk)
+
+/** Drivable by private vehicles — delegates to TravelMode.Drive passable set. */
+val Terrain.isDrivable: Boolean get() = this in TravelMode.passableTerrains(TravelMode.Drive)
+
+/** Bikeable — delegates to TravelMode.Bike passable set. */
+val Terrain.isBikeable: Boolean get() = this in TravelMode.passableTerrains(TravelMode.Bike)
+
+/** Speed limit in cells/tick for vehicles on this terrain. 0 = not drivable/bus-only. */
 val Terrain.speedLimit: Int get() = when (this) {
     Terrain.Interstate -> 6
     Terrain.ArterialRoad -> 4
@@ -38,17 +45,4 @@ val Terrain.speedLimit: Int get() = when (this) {
 private val ROAD_TERRAINS = setOf(
     Terrain.Interstate, Terrain.ArterialRoad, Terrain.CollectorRoad,
     Terrain.LocalRoad, Terrain.RuralRoad
-)
-
-private val WALKABLE_TERRAINS = setOf(
-    Terrain.Sidewalk, Terrain.Park, Terrain.Interior, Terrain.Platform, Terrain.Tunnel
-)
-
-private val DRIVABLE_TERRAINS = setOf(
-    Terrain.Interstate, Terrain.ArterialRoad, Terrain.CollectorRoad,
-    Terrain.LocalRoad, Terrain.RuralRoad, Terrain.Parking
-)
-
-private val BIKEABLE_TERRAINS = setOf(
-    Terrain.BikePath, Terrain.LocalRoad, Terrain.CollectorRoad, Terrain.RuralRoad
 )
