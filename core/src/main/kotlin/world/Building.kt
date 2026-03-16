@@ -58,11 +58,29 @@ data class Building(
 
     var wage: Int = subtype?.baseWage ?: 0
 
+    var rent: Int = subtype?.baseRent ?: 0
+
     val isWorkplace: Boolean get() = subtype?.baseWage != null && subtype.baseWage > 0
+
+    val isResidential: Boolean get() = type == BuildingType.Residential
 
     val workerCount: Int get() = currentOccupants.size  // during work hours approximates workers
 
     val isHiring: Boolean get() = isWorkplace && !isFull
+}
+
+val BuildingSubtype.baseRent: Int get() = when (this) {
+    BuildingSubtype.House -> 10
+    BuildingSubtype.Apartment -> 20
+    BuildingSubtype.Luxury -> 50
+    else -> 0
+}
+
+val BuildingSubtype.homeQuality: Int get() = when (this) {
+    BuildingSubtype.House -> 1
+    BuildingSubtype.Apartment -> 2
+    BuildingSubtype.Luxury -> 3
+    else -> 0
 }
 
 val BuildingSubtype.baseWage: Int get() = when (this) {

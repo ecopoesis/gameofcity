@@ -49,7 +49,8 @@ class SimBroadcaster(private val json: Json) {
                 hunger = peep.needs.hunger,
                 fatigue = peep.needs.sleep,
                 topNeed = top?.first?.name,
-                topNeedValue = top?.second ?: 0f
+                topNeedValue = top?.second ?: 0f,
+                homeless = peep.isHomeless
             )
         }
         val message = json.encodeToString(

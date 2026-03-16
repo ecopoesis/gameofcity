@@ -10,7 +10,8 @@ data class PeepPosition(
     val hunger: Float,
     val fatigue: Float,
     val topNeed: String? = null,
-    val topNeedValue: Float = 0f
+    val topNeedValue: Float = 0f,
+    val homeless: Boolean = false
 )
 
 @Serializable

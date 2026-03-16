@@ -44,7 +44,8 @@ data class BuildingData(
     val capacity: Int = 0,
     val occupants: Int = 0,
     val isFull: Boolean = false,
-    val wage: Int = 0
+    val wage: Int = 0,
+    val rent: Int = 0
 )
 
 @Serializable

@@ -20,5 +20,8 @@ data class Peep(
     var brain: Brain = IdleBrain(),
     var lastAction: Action = Action.Idle,
     val friendships: MutableMap<PeepId, Float> = mutableMapOf(),
-    var schedule: ScheduleType = ScheduleType.Worker
-)
+    var schedule: ScheduleType = ScheduleType.Worker,
+    var rentGraceDays: Int = 0
+) {
+    val isHomeless: Boolean get() = homeId == null
+}

@@ -317,12 +317,16 @@ function updatePeeps(interpolate) {
         matrix.setPosition(wx, wy, wz);
         peepMesh.setMatrixAt(i, matrix);
 
-        // Color based on top need
-        const needColor = p.topNeed && p.topNeedValue > 0.3 ? NEED_COLORS[p.topNeed] : null;
-        if (needColor) {
-            color.setRGB(needColor[0], needColor[1], needColor[2]);
+        // Color based on status
+        if (p.homeless) {
+            color.setRGB(0.5, 0.5, 0.5);
         } else {
-            color.setRGB(1, 1, 1);
+            const needColor = p.topNeed && p.topNeedValue > 0.3 ? NEED_COLORS[p.topNeed] : null;
+            if (needColor) {
+                color.setRGB(needColor[0], needColor[1], needColor[2]);
+            } else {
+                color.setRGB(1, 1, 1);
+            }
         }
         peepMesh.setColorAt(i, color);
     }

@@ -292,6 +292,7 @@ class CityRenderer(
     }
 
     private fun peepColor(peep: peep.Peep): Color {
+        if (peep.isHomeless) return Color.GRAY
         val top = peep.needs.topNeed()
         if (top != null && top.second > 0.3f) {
             return NEED_COLORS[top.first] ?: Color.WHITE

@@ -9,6 +9,7 @@ import peep.WorldView
 import world.CellCoord
 import world.WorldMap
 import world.baseWage
+import world.homeQuality
 import kotlin.coroutines.CoroutineContext
 
 class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContext = Dispatchers.Default) {
@@ -110,9 +111,11 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 }
             }
             is Action.Sleep -> {
-                n.sleep = (n.sleep - 0.5f).coerceAtLeast(0f)
-                n.warmth = (n.warmth - 0.3f).coerceAtLeast(0f)
-                n.shelter = (n.shelter - 0.2f).coerceAtLeast(0f)
+                val atHome = peep.homeId != null && peep.homeId == action.buildingId
+                val recovery = if (atHome) 0.5f else 0.2f  // reduced for homeless/park
+                n.sleep = (n.sleep - recovery).coerceAtLeast(0f)
+                n.warmth = (n.warmth - if (atHome) 0.3f else 0.1f).coerceAtLeast(0f)
+                n.shelter = (n.shelter - if (atHome) 0.2f else 0.05f).coerceAtLeast(0f)
             }
             is Action.Work -> {
                 n.recognition = (n.recognition - 0.1f).coerceAtLeast(0f)
@@ -206,10 +209,72 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             n.learning   = (n.learning   + 0.00008f).coerceIn(0f, 1f)
             n.purpose    = (n.purpose    + 0.00005f).coerceIn(0f, 1f)
 
-            // Rent (daily)
-            if (isNewDay && peep.homeId != null) {
-                peep.money -= 20f
-                if (peep.money < 0f) peep.homeId = null  // evicted
+            // Homeless: shelter decays 3× faster
+            if (peep.isHomeless) {
+                n.shelter = (n.shelter + 0.0006f).coerceIn(0f, 1f) // extra 2× on top of base
+            }
+        }
+
+        // Rent collection + eviction (daily)
+        if (isNewDay) {
+            peeps.values.forEach { peep ->
+                if (peep.homeId != null) {
+                    val home = map.buildings[peep.homeId!!]
+                    val rentDue = home?.rent ?: 20
+                    if (peep.money >= rentDue) {
+                        peep.money -= rentDue.toFloat()
+                        peep.rentGraceDays = 0
+                    } else {
+                        peep.rentGraceDays++
+                        if (peep.rentGraceDays >= 3) {
+                            peep.homeId = null  // evicted
+                            peep.rentGraceDays = 0
+                        }
+                    }
+                }
+            }
+
+            // Housing search: homeless peeps look for affordable housing
+            val vacantHomes = map.buildings.values
+                .filter { it.isResidential && !it.isFull }
+                .sortedBy { it.rent }
+            peeps.values.filter { it.isHomeless }.forEach { peep ->
+                val affordable = vacantHomes.firstOrNull { b ->
+                    b.rent <= peep.money / 5 && !b.isFull
+                }
+                if (affordable != null) {
+                    peep.homeId = affordable.id
+                }
+            }
+
+            // Upgrading/downgrading (weekly — every 7 days)
+            if (clock.day % 7 == 0) {
+                peeps.values.filter { !it.isHomeless }.forEach { peep ->
+                    val home = map.buildings[peep.homeId!!] ?: return@forEach
+                    val homeQuality = home.subtype?.homeQuality ?: 1
+
+                    // Upgrade: can afford luxury and living in lower quality
+                    if (homeQuality < 3 && peep.money > 500f) {
+                        val upgrade = vacantHomes.firstOrNull { b ->
+                            (b.subtype?.homeQuality ?: 0) > homeQuality &&
+                            b.rent <= peep.money / 5 && !b.isFull
+                        }
+                        if (upgrade != null && (peep.id % 10 < 3)) { // ~30% chance
+                            peep.homeId = upgrade.id
+                        }
+                    }
+
+                    // Downgrade: spending >50% of daily income on rent
+                    val dailyIncome = map.buildings[peep.jobId]?.wage?.toFloat() ?: 0f
+                    if (dailyIncome > 0 && home.rent > dailyIncome * 0.5f) {
+                        val cheaper = vacantHomes.firstOrNull { b ->
+                            b.rent < home.rent && !b.isFull
+                        }
+                        if (cheaper != null && (peep.id % 5 == 0)) { // ~20% chance
+                            peep.homeId = cheaper.id
+                        }
+                    }
+                }
             }
         }
 
