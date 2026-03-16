@@ -125,7 +125,7 @@ function buildCity(data) {
         const height = BUILDING_HEIGHTS[type] || 32;
         const color = BUILDING_COLORS[type] || new THREE.Color(0.5, 0.5, 0.5);
         const bldGeo = new THREE.BoxGeometry(CS, height, CS);
-        const mat = new THREE.MeshLambertMaterial({ color });
+        const mat = new THREE.MeshLambertMaterial({ color, transparent: true, opacity: 0.55 });
 
         // Count total cells
         let totalCells = 0;
