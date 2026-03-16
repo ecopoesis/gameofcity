@@ -17,19 +17,26 @@ class SimBroadcaster(private val json: Json) {
     }
 
     suspend fun sendSnapshot(session: WebSocketSession, engine: TickEngine) {
-        val saveData = SaveConverter.toSaveData(engine)
-        val message = json.encodeToString(SnapshotMessage.serializer(), SnapshotMessage(data = saveData))
         try {
+            val saveData = SaveConverter.toSaveData(engine)
+            val message = json.encodeToString(SnapshotMessage.serializer(), SnapshotMessage(data = saveData))
             session.send(Frame.Text(message))
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            println("sendSnapshot failed: ${e.message}")
+            e.printStackTrace()
             removeSession(session)
         }
     }
 
     suspend fun broadcastSnapshot(engine: TickEngine) {
-        val saveData = SaveConverter.toSaveData(engine)
-        val message = json.encodeToString(SnapshotMessage.serializer(), SnapshotMessage(data = saveData))
-        broadcast(message)
+        try {
+            val saveData = SaveConverter.toSaveData(engine)
+            val message = json.encodeToString(SnapshotMessage.serializer(), SnapshotMessage(data = saveData))
+            broadcast(message)
+        } catch (e: Exception) {
+            println("broadcastSnapshot failed: ${e.message}")
+            e.printStackTrace()
+        }
     }
 
     suspend fun broadcastPeepUpdate(engine: TickEngine) {

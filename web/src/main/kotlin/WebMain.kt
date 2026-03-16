@@ -16,7 +16,7 @@ import java.awt.Desktop
 import java.net.URI
 import kotlin.time.Duration.Companion.seconds
 
-private val json = Json { prettyPrint = false }
+private val json = Json { prettyPrint = false; encodeDefaults = true }
 
 @Volatile
 private var simEngine: TickEngine = createEngine()
