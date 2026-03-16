@@ -13,7 +13,7 @@ import world.CellCoord
 class SaveLoadTest : StringSpec({
 
     "round-trip preserves engine state" {
-        val map = CityGenerator.generate(CityGenConfig(width = 20, height = 20, seed = 42L))
+        val map = CityGenerator.generate(CityGenConfig(width = 20, height = 20, seed = 42L, blockSize = 4))
         val engine = TickEngine(map)
         PeepSpawner.spawn(engine, 10)
 
@@ -31,7 +31,7 @@ class SaveLoadTest : StringSpec({
     }
 
     "round-trip preserves peep data" {
-        val map = CityGenerator.generate(CityGenConfig(width = 20, height = 20, seed = 43L))
+        val map = CityGenerator.generate(CityGenConfig(width = 20, height = 20, seed = 43L, blockSize = 4))
         val engine = TickEngine(map)
         PeepSpawner.spawn(engine, 5)
         repeat(50) { engine.step() }
@@ -54,7 +54,7 @@ class SaveLoadTest : StringSpec({
     }
 
     "brain type is preserved" {
-        val map = CityGenerator.generate(CityGenConfig(width = 20, height = 20, seed = 44L))
+        val map = CityGenerator.generate(CityGenConfig(width = 20, height = 20, seed = 44L, blockSize = 4))
         val engine = TickEngine(map)
         PeepSpawner.spawn(engine, 3)
         engine.peeps[1]?.brain = RandomBrain()
@@ -67,7 +67,7 @@ class SaveLoadTest : StringSpec({
     }
 
     "cell terrain is preserved" {
-        val map = CityGenerator.generate(CityGenConfig(width = 15, height = 15, seed = 45L))
+        val map = CityGenerator.generate(CityGenConfig(width = 15, height = 15, seed = 45L, blockSize = 4))
         val engine = TickEngine(map)
 
         val json = GameSerializer.serialize(engine)

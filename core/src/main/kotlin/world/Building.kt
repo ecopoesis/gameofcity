@@ -50,7 +50,17 @@ data class Building(
     val tenantIds: Set<PeepId> = emptySet(),
     val workerIds: Set<PeepId> = emptySet()
 ) {
-    val capacity: Int get() = cells.size * (subtype?.capacityMultiplier ?: 3)
+    val capacity: Int get() {
+        val s = subtype ?: return (cells.size / 3).coerceAtLeast(1)
+        // At 10ft/cell, each cell = 100sqft. stories multiplies effective floor area.
+        val floorCells = cells.size * s.stories
+        return (floorCells * s.capacityMultiplier / CELLS_PER_PERSON).coerceAtLeast(1)
+    }
+
+    companion object {
+        // Normalization factor for 10ft/cell buildings. Tuned so a 5x5 house (2 stories, mult=2) ≈ 5 capacity.
+        private const val CELLS_PER_PERSON = 20
+    }
 
     val currentOccupants: MutableSet<PeepId> = mutableSetOf()
 
@@ -88,6 +98,31 @@ val BuildingSubtype.homeQuality: Int get() = when (this) {
     BuildingSubtype.Apartment -> 2
     BuildingSubtype.Luxury -> 3
     else -> 0
+}
+
+val BuildingSubtype.stories: Int get() = when (this) {
+    BuildingSubtype.House -> 2
+    BuildingSubtype.Apartment -> 5
+    BuildingSubtype.Luxury -> 3
+    BuildingSubtype.Restaurant -> 1
+    BuildingSubtype.GroceryStore -> 1
+    BuildingSubtype.Cafe -> 1
+    BuildingSubtype.Shop -> 2
+    BuildingSubtype.Office -> 10
+    BuildingSubtype.Factory -> 2
+    BuildingSubtype.Warehouse -> 1
+    BuildingSubtype.Workshop -> 1
+    BuildingSubtype.Hospital -> 5
+    BuildingSubtype.School -> 3
+    BuildingSubtype.Library -> 2
+    BuildingSubtype.CommunityCenter -> 2
+    BuildingSubtype.PoliceStation -> 2
+    BuildingSubtype.FireStation -> 1
+    BuildingSubtype.Park -> 1
+    BuildingSubtype.Gym -> 2
+    BuildingSubtype.Theater -> 3
+    BuildingSubtype.Stadium -> 4
+    BuildingSubtype.Museum -> 3
 }
 
 val BuildingSubtype.baseWage: Int get() = when (this) {

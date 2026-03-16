@@ -29,46 +29,144 @@ object CityGenerator {
         return map
     }
 
+    // --- Road corridor model ---
+
+    private data class Corridor(
+        val start: Int,     // first cell (sidewalk)
+        val roadStart: Int, // first road cell
+        val roadEnd: Int,   // last road cell
+        val end: Int,       // last cell (sidewalk)
+        val terrain: Terrain
+    )
+
+    private fun roadWidth(terrain: Terrain): Int = when (terrain) {
+        Terrain.ArterialRoad -> 4
+        Terrain.CollectorRoad -> 3
+        Terrain.LocalRoad -> 2
+        else -> 2
+    }
+
+    private fun roadTypeForIndex(index: Int, maxIndex: Int): Terrain = when {
+        index == 0 || index == maxIndex -> Terrain.CollectorRoad
+        index % 4 == 0 -> Terrain.ArterialRoad
+        index % 2 == 0 -> Terrain.CollectorRoad
+        else -> Terrain.LocalRoad
+    }
+
+    private fun roadPriority(terrain: Terrain): Int = when (terrain) {
+        Terrain.ArterialRoad -> 3
+        Terrain.CollectorRoad -> 2
+        Terrain.LocalRoad -> 1
+        else -> 0
+    }
+
+    private fun computeCorridors(mapSize: Int, blockSize: Int): List<Corridor> {
+        val corridors = mutableListOf<Corridor>()
+        var pos = 0
+        var index = 0
+
+        // First pass: compute corridor count to know the max index
+        val tempPositions = mutableListOf<Int>()
+        var tempPos = 0
+        while (tempPos + 4 <= mapSize) {
+            tempPositions.add(tempPos)
+            val terrain = roadTypeForIndex(tempPositions.size - 1, Int.MAX_VALUE)
+            val w = roadWidth(terrain)
+            tempPos += w + 2 + blockSize // sidewalk + road + sidewalk + block
+        }
+        val maxIndex = tempPositions.size // closing corridor will be this index
+
+        // Second pass: build corridors
+        while (pos + 4 <= mapSize) {
+            val terrain = roadTypeForIndex(index, maxIndex)
+            val w = roadWidth(terrain)
+            val corridorEnd = pos + w + 1
+
+            if (corridorEnd >= mapSize) break
+
+            corridors.add(Corridor(pos, pos + 1, pos + w, corridorEnd, terrain))
+            pos = corridorEnd + 1 + blockSize
+            index++
+        }
+
+        // Close with perimeter corridor if there's room
+        if (corridors.isNotEmpty()) {
+            val lastEnd = corridors.last().end
+            val closingTerrain = Terrain.CollectorRoad
+            val closingWidth = roadWidth(closingTerrain)
+            val closingTotal = closingWidth + 2
+            val closeStart = mapSize - closingTotal
+
+            if (closeStart > lastEnd) {
+                corridors.add(Corridor(closeStart, closeStart + 1, closeStart + closingWidth, mapSize - 1, closingTerrain))
+            }
+        }
+
+        return corridors
+    }
+
+    // --- Grid generator ---
+
     private fun generateGrid(map: WorldMap, config: CityGenConfig, noise: SimplexNoise, rng: Random) {
-        // Step 1: Lay road grid
-        val roadInterval = config.blockSize + 1
-        for (x in 0 until config.width) {
-            for (y in 0 until config.height) {
-                val isPerimeter = x == 0 || y == 0 || x == config.width - 1 || y == config.height - 1
-                val isRoad = isPerimeter || x % roadInterval == 0 || y % roadInterval == 0
-                if (isRoad) {
-                    map.setCell(Cell(CellCoord(x, y), Terrain.LocalRoad))
+        val corridorsX = computeCorridors(config.width, config.blockSize)
+        val corridorsY = computeCorridors(config.height, config.blockSize)
+
+        // Lay horizontal corridors (Y corridors spanning full width)
+        for (corridor in corridorsY) {
+            for (x in 0 until config.width) {
+                map.setCell(Cell(CellCoord(x, corridor.start), Terrain.Sidewalk))
+                map.setCell(Cell(CellCoord(x, corridor.end), Terrain.Sidewalk))
+                for (ry in corridor.roadStart..corridor.roadEnd) {
+                    map.setCell(Cell(CellCoord(x, ry), corridor.terrain))
                 }
             }
         }
 
-        // Step 2: Sidewalks adjacent to roads
-        for (x in 0 until config.width) {
+        // Lay vertical corridors (X corridors spanning full height)
+        for (corridor in corridorsX) {
             for (y in 0 until config.height) {
-                val cell = map.getCell(CellCoord(x, y)) ?: continue
-                if (cell.terrain != Terrain.Empty) continue
-                if (hasAdjacentRoad(map, x, y)) {
-                    map.setCell(Cell(CellCoord(x, y), Terrain.Sidewalk))
+                // Sidewalks: don't overwrite existing road cells
+                val startCell = map.getCell(CellCoord(corridor.start, y))
+                if (startCell == null || !startCell.terrain.isRoad) {
+                    map.setCell(Cell(CellCoord(corridor.start, y), Terrain.Sidewalk))
+                }
+                val endCell = map.getCell(CellCoord(corridor.end, y))
+                if (endCell == null || !endCell.terrain.isRoad) {
+                    map.setCell(Cell(CellCoord(corridor.end, y), Terrain.Sidewalk))
+                }
+                // Road cells: at intersections, use higher-priority road type
+                for (rx in corridor.roadStart..corridor.roadEnd) {
+                    val existing = map.getCell(CellCoord(rx, y))
+                    val newTerrain = if (existing != null && existing.terrain.isRoad) {
+                        if (roadPriority(existing.terrain) >= roadPriority(corridor.terrain))
+                            existing.terrain else corridor.terrain
+                    } else {
+                        corridor.terrain
+                    }
+                    map.setCell(Cell(CellCoord(rx, y), newTerrain))
                 }
             }
         }
 
-        // Step 3: Identify blocks
+        // Find blocks (empty rectangles between corridors)
         val blocks = findBlocks(map, config)
 
-        // Step 4: Zone blocks and place buildings
+        // Zone blocks and place buildings
         placeBuildings(map, blocks, noise, rng, config)
     }
 
-    private fun generateOrganic(map: WorldMap, config: CityGenConfig, noise: SimplexNoise, rng: Random) {
-        val roadInterval = config.blockSize + 1
+    // --- Organic generator ---
 
-        // Start with grid layout
+    private fun generateOrganic(map: WorldMap, config: CityGenConfig, noise: SimplexNoise, rng: Random) {
+        val roadInterval = config.blockSize + 3 // blockSize + local road corridor (2 road + 1 margin)
+
+        // Start with grid of 2-cell-wide local roads
         for (x in 0 until config.width) {
             for (y in 0 until config.height) {
-                val isPerimeter = x == 0 || y == 0 || x == config.width - 1 || y == config.height - 1
-                val isRoad = isPerimeter || x % roadInterval == 0 || y % roadInterval == 0
-                if (isRoad) {
+                val isPerimeter = x <= 1 || y <= 1 || x >= config.width - 2 || y >= config.height - 2
+                val isRoadX = x % roadInterval == 0 || x % roadInterval == 1
+                val isRoadY = y % roadInterval == 0 || y % roadInterval == 1
+                if (isPerimeter || isRoadX || isRoadY) {
                     map.setCell(Cell(CellCoord(x, y), Terrain.LocalRoad))
                 }
             }
@@ -76,31 +174,27 @@ object CityGenerator {
 
         // Displace road midpoints based on organic level
         val displacement = (config.organicLevel * config.blockSize / 2f).toInt().coerceAtLeast(1)
-        for (x in 0 until config.width) {
-            for (y in 0 until config.height) {
+        for (x in 2 until config.width - 2) {
+            for (y in 2 until config.height - 2) {
                 val cell = map.getCell(CellCoord(x, y)) ?: continue
-                if (cell.terrain != Terrain.LocalRoad) continue
-                val isPerimeter = x == 0 || y == 0 || x == config.width - 1 || y == config.height - 1
-                if (isPerimeter) continue
+                if (!cell.terrain.isRoad) continue
 
-                // Randomly displace some road cells
                 if (rng.nextFloat() < config.organicLevel * 0.3f) {
                     val dx = rng.nextInt(-displacement, displacement + 1)
                     val dy = rng.nextInt(-displacement, displacement + 1)
-                    val nx = (x + dx).coerceIn(1, config.width - 2)
-                    val ny = (y + dy).coerceIn(1, config.height - 2)
-                    // Add road at displaced position
+                    val nx = (x + dx).coerceIn(2, config.width - 3)
+                    val ny = (y + dy).coerceIn(2, config.height - 3)
                     map.setCell(Cell(CellCoord(nx, ny), Terrain.LocalRoad))
                 }
             }
         }
 
-        // Randomly remove some grid roads and add organic connectors
+        // Randomly remove some grid roads
         if (config.organicLevel > 0.3f) {
-            for (x in 1 until config.width - 1) {
-                for (y in 1 until config.height - 1) {
+            for (x in 2 until config.width - 2) {
+                for (y in 2 until config.height - 2) {
                     val cell = map.getCell(CellCoord(x, y)) ?: continue
-                    if (cell.terrain == Terrain.LocalRoad && rng.nextFloat() < config.organicLevel * 0.15f) {
+                    if (cell.terrain.isRoad && rng.nextFloat() < config.organicLevel * 0.15f) {
                         map.setCell(Cell(CellCoord(x, y), Terrain.Empty))
                     }
                 }
@@ -117,8 +211,8 @@ object CityGenerator {
                 var cy = sy
                 repeat(config.blockSize * 3) {
                     val angle = noise.octaveNoise(cx * 0.1, cy * 0.1, 2) * Math.PI * 2
-                    cx = (cx + kotlin.math.cos(angle).toInt()).coerceIn(1, config.width - 2)
-                    cy = (cy + kotlin.math.sin(angle).toInt()).coerceIn(1, config.height - 2)
+                    cx = (cx + kotlin.math.cos(angle).toInt()).coerceIn(2, config.width - 3)
+                    cy = (cy + kotlin.math.sin(angle).toInt()).coerceIn(2, config.height - 3)
                     map.setCell(Cell(CellCoord(cx, cy), Terrain.LocalRoad))
                 }
             }
@@ -135,10 +229,11 @@ object CityGenerator {
             }
         }
 
-        // Find blocks via flood-fill (works for arbitrary shapes)
         val blocks = floodFillBlocks(map, config)
         placeBuildings(map, blocks, noise, rng, config)
     }
+
+    // --- Building placement ---
 
     private fun placeBuildings(map: WorldMap, blocks: List<Block>, noise: SimplexNoise, rng: Random, config: CityGenConfig) {
         var nextBuildingId = 1
@@ -146,19 +241,20 @@ object CityGenerator {
             val cx = (block.x1 + block.x2) / 2.0
             val cy = (block.y1 + block.y2) / 2.0
             val noiseVal = noise.octaveNoise(cx * 0.08, cy * 0.08, 3)
-            val blockArea = (block.x2 - block.x1 + 1) * (block.y2 - block.y1 + 1)
+            val blockWidth = block.x2 - block.x1 + 1
+            val blockHeight = block.y2 - block.y1 + 1
+            val blockArea = blockWidth * blockHeight
 
-            // Park as building
+            // Park chance
             if (rng.nextFloat() < config.parkChance) {
                 val cells = blockCells(block)
                 if (cells.isNotEmpty()) {
-                    val building = Building(
+                    map.addBuilding(Building(
                         id = nextBuildingId++,
                         type = BuildingType.Recreation,
                         subtype = BuildingSubtype.Park,
                         cells = cells
-                    )
-                    map.addBuilding(building)
+                    ))
                 }
                 continue
             }
@@ -168,44 +264,116 @@ object CityGenerator {
                 // Null zone -> park
                 val cells = blockCells(block)
                 if (cells.isNotEmpty()) {
-                    val building = Building(
+                    map.addBuilding(Building(
                         id = nextBuildingId++,
                         type = BuildingType.Recreation,
                         subtype = BuildingSubtype.Park,
                         cells = cells
-                    )
-                    map.addBuilding(building)
+                    ))
                 }
                 continue
             }
 
-            val cells = blockCells(block)
-            if (cells.isNotEmpty()) {
-                val subtype = assignSubtype(zoneType, blockArea, rng)
-                val building = Building(
-                    id = nextBuildingId++,
-                    type = zoneType,
-                    subtype = subtype,
-                    cells = cells
-                )
-                map.addBuilding(building)
+            // For large blocks, subdivide into individual buildings
+            if (blockArea > 40) {
+                nextBuildingId = subdivideBuildingsInBlock(map, block, zoneType, rng, nextBuildingId)
+            } else {
+                // Small block: single building fills it
+                val cells = blockCells(block)
+                if (cells.isNotEmpty()) {
+                    val subtype = assignSubtype(zoneType, blockArea, rng)
+                    map.addBuilding(Building(
+                        id = nextBuildingId++,
+                        type = zoneType,
+                        subtype = subtype,
+                        cells = cells
+                    ))
+                }
             }
         }
     }
 
+    private fun subdivideBuildingsInBlock(
+        map: WorldMap,
+        block: Block,
+        zoneType: BuildingType,
+        rng: Random,
+        startId: Int
+    ): Int {
+        var nextId = startId
+        val (footW, footH) = buildingFootprint(zoneType, rng)
+        val gap = 1 // 1-cell gap between buildings (becomes sidewalk)
+
+        var bx = block.x1
+        while (bx <= block.x2) {
+            val w = footW.coerceAtMost(block.x2 - bx + 1)
+            if (w < 3) { bx += w + gap; continue }
+
+            var by = block.y1
+            while (by <= block.y2) {
+                val h = footH.coerceAtMost(block.y2 - by + 1)
+                if (h < 3) { by += h + gap; continue }
+
+                val cells = mutableSetOf<CellCoord>()
+                for (x in bx until bx + w) {
+                    for (y in by until by + h) {
+                        cells.add(CellCoord(x, y))
+                    }
+                }
+
+                val subtype = assignSubtype(zoneType, cells.size, rng)
+                map.addBuilding(Building(
+                    id = nextId++,
+                    type = zoneType,
+                    subtype = subtype,
+                    cells = cells
+                ))
+
+                by += h + gap
+            }
+            bx += w + gap
+        }
+
+        return nextId
+    }
+
+    private fun buildingFootprint(type: BuildingType, rng: Random): Pair<Int, Int> = when (type) {
+        BuildingType.Residential -> when (rng.nextInt(3)) {
+            0 -> 5 to 5     // house
+            1 -> 5 to 7     // townhouse
+            else -> 8 to 10 // apartment
+        }
+        BuildingType.Commercial -> when (rng.nextInt(3)) {
+            0 -> 4 to 4     // cafe/shop
+            1 -> 6 to 6     // restaurant/grocery
+            else -> 10 to 10 // office
+        }
+        BuildingType.Industrial -> when (rng.nextInt(2)) {
+            0 -> 8 to 12    // factory
+            else -> 10 to 8 // warehouse
+        }
+        BuildingType.Civic -> when (rng.nextInt(2)) {
+            0 -> 6 to 8     // school/library
+            else -> 8 to 10 // hospital
+        }
+        BuildingType.Recreation -> 0 to 0 // fills entire block
+        BuildingType.Entertainment -> 6 to 6
+    }
+
     private fun assignSubtype(type: BuildingType, blockArea: Int, rng: Random): BuildingSubtype {
         val subtypes = BuildingSubtype.entries.filter { it.category == type }
-        if (subtypes.isEmpty()) return BuildingSubtype.House // fallback
+        if (subtypes.isEmpty()) return BuildingSubtype.House
 
-        // Size-based selection
         val sizeFiltered = when {
-            blockArea > 12 -> subtypes.filter { it in LARGE_SUBTYPES } .ifEmpty { subtypes }
-            blockArea in 5..12 -> subtypes.filter { it in MEDIUM_SUBTYPES }.ifEmpty { subtypes }
+            blockArea > 60 -> subtypes.filter { it in LARGE_SUBTYPES }.ifEmpty { subtypes }
+            blockArea in 20..60 -> subtypes.filter { it in MEDIUM_SUBTYPES }.ifEmpty { subtypes }
             else -> subtypes.filter { it in SMALL_SUBTYPES }.ifEmpty { subtypes }
         }
 
         return sizeFiltered[rng.nextInt(sizeFiltered.size)]
     }
+
+    // --- Block finding ---
 
     private fun blockCells(block: Block): Set<CellCoord> {
         val cells = mutableSetOf<CellCoord>()
@@ -276,7 +444,6 @@ object CityGenerator {
                 val cell = map.getCell(CellCoord(x, y)) ?: continue
                 if (cell.terrain != Terrain.Empty) { visited.add(key(x, y)); continue }
 
-                // Flood-fill to find contiguous empty region
                 val region = mutableSetOf<Pair<Int, Int>>()
                 val queue = ArrayDeque<Pair<Int, Int>>()
                 queue.add(x to y)
@@ -297,7 +464,6 @@ object CityGenerator {
                 }
 
                 if (region.size >= 2) {
-                    // Compute bounding box
                     val minX = region.minOf { it.first }
                     val maxX = region.maxOf { it.first }
                     val minY = region.minOf { it.second }
@@ -308,6 +474,8 @@ object CityGenerator {
         }
         return blocks
     }
+
+    // --- Zoning ---
 
     private fun zoneFromNoise(noise: Double, urbanization: Float): BuildingType? {
         val shift = (urbanization - 0.5) * 0.3
