@@ -83,7 +83,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | Emergent Events + Stats Dashboard | #26 | ✅ Done |
 | Environment + City Services | #27 | ✅ Done |
 | Scale + Road Classification | #28 | ✅ Done |
-| Multi-Lane Roads + Blocks | #29 | |
+| Multi-Lane Roads + Blocks | #29 | ✅ Done |
 | Pathfinding Upgrade | #30 | |
 | Vehicle Model | #31 | |
 | Parking Infrastructure | #32 | |
