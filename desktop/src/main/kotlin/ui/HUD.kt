@@ -191,7 +191,7 @@ class HUD(private val engine: TickEngine, private val skin: Skin) {
 
     fun update(paused: Boolean) {
         tickLabel.setText("Tick: ${engine.tick}")
-        timeLabel.setText(engine.clock.timeString())
+        timeLabel.setText("${engine.clock.timeString()}  ${engine.weather.current.name}")
         popLabel.setText("Pop: ${engine.peeps.size}")
         speedLabel.setText("Speed: ${String.format("%.1f", speedFactor)}x")
         brainLabel.setText("Brain: $brainType")

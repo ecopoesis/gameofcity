@@ -26,6 +26,7 @@ data class PeepUpdateMessage(
     val deaths: Int = 0,
     val immigrants: Int = 0,
     val emigrants: Int = 0,
+    val weather: String = "Clear",
     val peeps: List<PeepPosition>
 )
 

@@ -1,6 +1,7 @@
 package peep
 
 import tick.SimClock
+import world.Weather
 import world.WorldMap
 
 interface WorldView {
@@ -8,6 +9,7 @@ interface WorldView {
     val peeps: Map<Int, Peep>
     val tick: Long
     val clock: SimClock
+    val weather: Weather
 }
 
 interface Brain {

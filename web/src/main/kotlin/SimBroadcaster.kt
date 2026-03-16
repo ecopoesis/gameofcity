@@ -66,6 +66,7 @@ class SimBroadcaster(private val json: Json) {
                 deaths = engine.deathsToday,
                 immigrants = engine.immigrantsToday,
                 emigrants = engine.emigrantsToday,
+                weather = engine.weather.current.name,
                 peeps = positions
             )
         )

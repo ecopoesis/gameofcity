@@ -12,7 +12,9 @@ import peep.RelationshipTier
 import peep.ScheduleType
 import peep.UtilityBrain
 import peep.WorldView
+import world.BuildingSubtype
 import world.CellCoord
+import world.Weather
 import world.WorldMap
 import world.baseWage
 import world.homeQuality
@@ -35,12 +37,14 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
 
     val eventLog: EventLog = EventLog()
     var stats: CityStats = CityStats(); private set
+    val weather: Weather = Weather()
 
     private val worldView = object : WorldView {
         override val map: WorldMap get() = this@TickEngine.map
         override val peeps: Map<Int, Peep> get() = this@TickEngine.peeps
         override val tick: Long get() = this@TickEngine.tick
         override val clock: SimClock get() = this@TickEngine.clock
+        override val weather: Weather get() = this@TickEngine.weather
     }
 
     fun addPeep(peep: Peep) {
@@ -107,6 +111,7 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
         // Phase 5: Maintain
         maintain()
 
+        weather.advance()
         clock.advance()
         tick++
     }
@@ -228,15 +233,24 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             val n = peep.needs
             // Level 1 - Physiological (fast decay)
             n.hunger  = (n.hunger  + 0.001f).coerceIn(0f, 1f)
-            n.thirst  = (n.thirst  + 0.0012f).coerceIn(0f, 1f)
+            n.thirst  = (n.thirst  + 0.0012f * weather.current.thirstDecayMultiplier).coerceIn(0f, 1f)
             n.sleep   = (n.sleep   + 0.0005f).coerceIn(0f, 1f)
-            n.warmth  = (n.warmth  + 0.0002f).coerceIn(0f, 1f)
+            n.warmth  = (n.warmth  + 0.0002f * weather.current.warmthDecayMultiplier).coerceIn(0f, 1f)
 
             // Level 2 - Safety (moderate decay)
             if (peep.homeId == null) {
                 n.shelter = (n.shelter + 0.0003f).coerceIn(0f, 1f)
             }
-            n.health = (n.health + 0.0001f).coerceIn(0f, 1f)
+            // Hospital radius: -50% health decay for peeps living near hospital
+            val nearHospital = peep.homeId?.let { hid ->
+                val home = map.buildings[hid]
+                home != null && map.buildings.values.any { b ->
+                    b.subtype == BuildingSubtype.Hospital &&
+                    b.cells.any { c -> c.distanceTo(home.cells.first()) <= 10 }
+                }
+            } ?: false
+            val healthDecay = if (nearHospital) 0.00005f else 0.0001f
+            n.health = (n.health + healthDecay).coerceIn(0f, 1f)
             // financial: derived from money
             n.financial = when {
                 peep.money >= 200f -> 0f
@@ -629,6 +643,105 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
 
             // Compute aggregate stats daily
             stats = CityStats.compute(this)
+        }
+
+        // === Crime (every tick) ===
+        // Police station radius cache
+        val policeZones = map.buildings.values
+            .filter { it.subtype == BuildingSubtype.PoliceStation }
+            .flatMap { b -> b.cells.map { it } }
+        peeps.values.forEach { peep ->
+            val n = peep.needs
+            if (n.financial > 0.9f && n.community > 0.7f) {
+                // Check police proximity (-80% crime chance)
+                val nearPolice = policeZones.any { it.distanceTo(peep.position) <= 15 }
+                val crimeChance = if (nearPolice) 0.004f else 0.02f
+                if (Math.random() < crimeChance) {
+                    // Theft: steal from random nearby peep
+                    val victims = peeps.values.filter {
+                        it.id != peep.id && it.position.distanceTo(peep.position) <= 1 && it.money > 0
+                    }
+                    val victim = victims.randomOrNull()
+                    if (victim != null) {
+                        val stolen = (victim.money * 0.1f).coerceAtMost(20f)
+                        victim.money -= stolen
+                        peep.money += stolen
+                        // Nearby peeps feel unsafe
+                        peeps.values.filter { it.position.distanceTo(peep.position) <= 5 }.forEach {
+                            it.needs.shelter = (it.needs.shelter + 0.1f).coerceAtMost(1f)
+                        }
+                        eventLog.add(SimEvent(tick, clock.day, EventType.Crowding,
+                            "${peep.name} committed theft against ${victim.name}",
+                            listOf(peep.id, victim.id)))
+                    }
+                }
+            }
+        }
+
+        // === Fire (daily check) ===
+        if (clock.isNewDay()) {
+            // Fire station zones
+            val fireStationCells = map.buildings.values
+                .filter { it.subtype == BuildingSubtype.FireStation }
+                .flatMap { it.cells }
+
+            // Random fire start: 0.1% per building per day
+            map.buildings.values.filter { !it.isOnFire && !it.isDamaged }.forEach { bld ->
+                if (Math.random() < 0.001) {
+                    bld.isOnFire = true
+                    val nearFireStation = fireStationCells.any { it.distanceTo(bld.cells.first()) <= 20 }
+                    bld.fireTimer = if (nearFireStation) 3 else 10
+                    eventLog.add(SimEvent(tick, clock.day, EventType.Crowding,
+                        "Fire at ${bld.subtype?.name ?: bld.type.name}!"))
+                }
+            }
+        }
+
+        // Process active fires
+        map.buildings.values.filter { it.isOnFire }.forEach { bld ->
+            bld.fireTimer--
+            // Evacuate occupants
+            bld.currentOccupants.toList().forEach { peepId ->
+                val p = peeps[peepId]
+                if (p != null) {
+                    // Flee to nearest passable adjacent cell
+                    val pos = p.position
+                    val adj = listOf(
+                        CellCoord(pos.x + 1, pos.y), CellCoord(pos.x - 1, pos.y),
+                        CellCoord(pos.x, pos.y + 1), CellCoord(pos.x, pos.y - 1)
+                    )
+                    val road = adj.firstOrNull { map.isPassable(it) }
+                    if (road != null) {
+                        map.peepsAt[pos]?.remove(p.id)
+                        p.position = road
+                        map.peepsAt.getOrPut(road) { mutableListOf() }.add(p.id)
+                    }
+                }
+            }
+            if (bld.fireTimer <= 0) {
+                bld.isOnFire = false
+                val nearFireStation = map.buildings.values
+                    .filter { it.subtype == BuildingSubtype.FireStation }
+                    .any { fs -> fs.cells.any { it.distanceTo(bld.cells.first()) <= 20 } }
+                if (nearFireStation) {
+                    // Contained — building survives but damaged
+                    bld.isDamaged = true
+                    bld.repairTimer = 50
+                } else {
+                    // Destroyed — evict all residents/workers
+                    peeps.values.filter { it.homeId == bld.id }.forEach { it.homeId = null }
+                    peeps.values.filter { it.jobId == bld.id }.forEach { it.jobId = null }
+                    map.buildings.remove(bld.id)
+                }
+            }
+        }
+
+        // Repair damaged buildings
+        map.buildings.values.filter { it.isDamaged }.forEach { bld ->
+            bld.repairTimer--
+            if (bld.repairTimer <= 0) {
+                bld.isDamaged = false
+            }
         }
     }
 

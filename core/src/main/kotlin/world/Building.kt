@@ -31,6 +31,8 @@ enum class BuildingSubtype(val category: BuildingType, val capacityMultiplier: I
     School(BuildingType.Civic, 5),
     Library(BuildingType.Civic, 3),
     CommunityCenter(BuildingType.Civic, 4),
+    PoliceStation(BuildingType.Civic, 3),
+    FireStation(BuildingType.Civic, 3),
     // Recreation
     Park(BuildingType.Recreation, 10),
     Gym(BuildingType.Recreation, 3),
@@ -67,6 +69,11 @@ data class Building(
     val workerCount: Int get() = currentOccupants.size  // during work hours approximates workers
 
     val isHiring: Boolean get() = isWorkplace && !isFull
+
+    var isOnFire: Boolean = false
+    var fireTimer: Int = 0  // ticks remaining until destroyed or contained
+    var isDamaged: Boolean = false
+    var repairTimer: Int = 0  // ticks until fully repaired
 }
 
 val BuildingSubtype.baseRent: Int get() = when (this) {
@@ -95,5 +102,7 @@ val BuildingSubtype.baseWage: Int get() = when (this) {
     BuildingSubtype.Cafe -> 5
     BuildingSubtype.Shop -> 7
     BuildingSubtype.GroceryStore -> 6
+    BuildingSubtype.PoliceStation -> 16
+    BuildingSubtype.FireStation -> 16
     else -> 0
 }

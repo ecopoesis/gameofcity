@@ -327,7 +327,8 @@ object CityGenerator {
     private val MEDIUM_SUBTYPES = setOf(
         BuildingSubtype.House, BuildingSubtype.Restaurant, BuildingSubtype.School,
         BuildingSubtype.Theater, BuildingSubtype.CommunityCenter, BuildingSubtype.Hospital,
-        BuildingSubtype.Museum, BuildingSubtype.Gym
+        BuildingSubtype.Museum, BuildingSubtype.Gym, BuildingSubtype.PoliceStation,
+        BuildingSubtype.FireStation
     )
     private val SMALL_SUBTYPES = setOf(
         BuildingSubtype.Cafe, BuildingSubtype.Shop, BuildingSubtype.Workshop,

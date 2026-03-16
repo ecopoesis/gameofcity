@@ -196,9 +196,31 @@ class CityRenderer(
             else           -> 0.12f                            // night
         }
         val warmth = if (hour in 6..18) 0f else 0.08f  // blue tint at night
+        // Weather tint
+        val w = engine.weather.current
+        val weatherR = when (w) {
+            world.WeatherState.Rain -> -0.05f
+            world.WeatherState.Snow -> 0.03f
+            world.WeatherState.Heatwave -> 0.06f
+            else -> 0f
+        }
+        val weatherG = when (w) {
+            world.WeatherState.Rain -> -0.03f
+            world.WeatherState.Snow -> 0.03f
+            else -> 0f
+        }
+        val weatherB = when (w) {
+            world.WeatherState.Rain -> 0.05f
+            world.WeatherState.Snow -> 0.05f
+            world.WeatherState.Heatwave -> -0.04f
+            else -> 0f
+        }
         environment.set(ColorAttribute(
             ColorAttribute.AmbientLight,
-            ambientLevel - warmth, ambientLevel - warmth, ambientLevel + warmth, 1f
+            (ambientLevel - warmth + weatherR).coerceIn(0.05f, 1f),
+            (ambientLevel - warmth + weatherG).coerceIn(0.05f, 1f),
+            (ambientLevel + warmth + weatherB).coerceIn(0.05f, 1f),
+            1f
         ))
 
         modelBatch.begin(controller.camera)

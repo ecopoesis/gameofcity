@@ -139,11 +139,12 @@ const genOrganicSlider = document.getElementById('genOrganic');
 const genOrganicLabel = document.getElementById('genOrganicLabel');
 const generateBtn = document.getElementById('generateBtn');
 
-function updateHUD(tick, peepCount, hour, minute, day) {
+function updateHUD(tick, peepCount, hour, minute, day, weather) {
     if (hour !== undefined && minute !== undefined && day !== undefined) {
         const hh = String(hour).padStart(2, '0');
         const mm = String(minute).padStart(2, '0');
-        clockEl.textContent = `Day ${day}  ${hh}:${mm}`;
+        const weatherIcon = {Clear: '\u2600', Rain: '\u{1F327}', Snow: '\u2744', Heatwave: '\u{1F525}'}[weather] || '';
+        clockEl.textContent = `Day ${day}  ${hh}:${mm}  ${weatherIcon} ${weather || ''}`;
         updateSkyColor(hour);
     }
     tickEl.textContent = tick;
@@ -602,7 +603,7 @@ function connect() {
             prevPeepData = peepData;
             peepData = msg.peeps;
             lastPeepTime = performance.now();
-            updateHUD(msg.tick, msg.peeps.length, msg.hour, msg.minute, msg.day);
+            updateHUD(msg.tick, msg.peeps.length, msg.hour, msg.minute, msg.day, msg.weather);
             if (selectedPeepId != null) {
                 const p = peepData.find(pp => pp.id === selectedPeepId);
                 if (p) updateSelectionRing(p.x, p.y);
