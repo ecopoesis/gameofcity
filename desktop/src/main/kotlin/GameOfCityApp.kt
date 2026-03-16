@@ -69,6 +69,11 @@ class GameOfCityApp : ApplicationAdapter() {
         hud       = HUD(engine, skin)
         hud.brainType = currentBrainType
         hud.speedFactor = 0.05f / tickDuration
+        hud.onBrainChanged = { name ->
+            currentBrainType = name
+            engine.peeps.values.forEach { it.brain = SaveConverter.brainFromName(name) }
+            println("[Brain] Switched all peeps to $name")
+        }
         inspector = InspectorPanel(engine, skin)
         renderer  = CityRenderer(engine, orbitController)
     }
@@ -137,15 +142,20 @@ class GameOfCityApp : ApplicationAdapter() {
             hud.speedFactor = 0.05f / tickDuration
         }
 
-        // N = generate new city
-        if (Gdx.input.isKeyJustPressed(Input.Keys.N)) {
-            val config = CityGenConfig(width = 40, height = 40)
-            println("[CityGen] Generating ${config.width}x${config.height} city (seed=${config.seed})")
+        // N = generate new city (uses HUD config), also check HUD button
+        if (Gdx.input.isKeyJustPressed(Input.Keys.N) || hud.generateRequested) {
+            hud.generateRequested = false
+            val config = CityGenConfig(
+                width = hud.genWidth,
+                height = hud.genHeight,
+                peepCount = hud.genPeeps,
+                organicLevel = hud.genOrganic
+            )
+            println("[CityGen] Generating ${config.width}x${config.height} city (seed=${config.seed}, organic=${config.organicLevel})")
             val map = CityGenerator.generate(config)
             val newEngine = TickEngine(map)
-            val peepCount = (config.populationDensity * map.buildingsOfType(world.BuildingType.Residential).sumOf { it.cells.size }).toInt().coerceAtLeast(10)
-            PeepSpawner.spawn(newEngine, peepCount)
-            println("[CityGen] Spawned $peepCount peeps in ${map.buildings.size} buildings")
+            PeepSpawner.spawn(newEngine, config.peepCount)
+            println("[CityGen] Spawned ${config.peepCount} peeps in ${map.buildings.size} buildings")
             rebuildForEngine(newEngine)
         }
 

@@ -112,6 +112,32 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        #cmdbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 28px;
+            background: rgba(15, 15, 25, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 12px;
+            z-index: 100;
+            padding: 0 12px;
+        }
+        #cmdbar .key {
+            color: #8990a8;
+            background: #313244;
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        #cmdbar .act { color: #cdd6f4; margin-right: 12px; }
+        #hud { top: 40px; }
+        #inspector { top: 40px; }
         #status {
             position: absolute;
             top: 50%;
@@ -137,6 +163,13 @@
     </style>
 </head>
 <body>
+    <div id="cmdbar" style="display:none">
+        <span class="key">Space</span><span class="act">Pause</span>
+        <span class="key">B</span><span class="act">Brain</span>
+        <span class="key">+/-</span><span class="act">Speed</span>
+        <span class="key">N</span><span class="act">Generate</span>
+        <span class="key">Esc</span><span class="act">Deselect</span>
+    </div>
     <div id="status"><span class="dot"></span>Connecting to simulation...</div>
     <div id="hud" style="display:none">
         <div><span class="label">Tick:</span> <span id="tick">0</span></div>

@@ -522,6 +522,7 @@ function connect() {
     ws.onopen = () => {
         statusEl.style.display = 'none';
         hudEl.style.display = 'block';
+        document.getElementById('cmdbar').style.display = 'flex';
     };
 
     ws.onclose = () => {
@@ -594,6 +595,9 @@ function connect() {
             currentBrainType = types[(idx + 1) % types.length];
             brainSelect.value = currentBrainType;
             ws.send(JSON.stringify({ type: 'command', action: 'setBrainType', stringValue: currentBrainType }));
+        }
+        if (e.code === 'Escape') {
+            clearInspector();
         }
         if (e.code === 'Equal' || e.code === 'NumpadAdd') {
             tickDelayMs = Math.max(10, tickDelayMs - 10);
