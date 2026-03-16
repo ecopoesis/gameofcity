@@ -9,7 +9,7 @@ enum class Gender { Male, Female, NonBinary }
 data class Peep(
     val id: PeepId,
     val name: String,
-    val age: Int,
+    var age: Int,
     val gender: Gender,
     var position: CellCoord,
     var homeId: BuildingId? = null,
@@ -28,4 +28,7 @@ data class Peep(
 ) {
     val isHomeless: Boolean get() = homeId == null
     val isPartnered: Boolean get() = partnerId != null
+    val isChild: Boolean get() = age < 18
+    val isRetired: Boolean get() = age >= 65
+    var criticalDays: Int = 0  // consecutive days with 3+ critical needs
 }

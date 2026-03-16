@@ -60,6 +60,11 @@ class SimBroadcaster(private val json: Json) {
                 hour = engine.clock.hour,
                 minute = engine.clock.minute,
                 day = engine.clock.day,
+                population = engine.peeps.size,
+                births = engine.birthsToday,
+                deaths = engine.deathsToday,
+                immigrants = engine.immigrantsToday,
+                emigrants = engine.emigrantsToday,
                 peeps = positions
             )
         )

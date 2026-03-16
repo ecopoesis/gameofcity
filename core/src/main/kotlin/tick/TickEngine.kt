@@ -4,9 +4,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import peep.Action
+import peep.Demographics
+import peep.Gender
 import peep.Household
 import peep.Peep
 import peep.RelationshipTier
+import peep.ScheduleType
+import peep.UtilityBrain
 import peep.WorldView
 import world.CellCoord
 import world.WorldMap
@@ -19,8 +23,15 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
     val peeps: MutableMap<Int, Peep> = mutableMapOf()
     val households: MutableMap<Int, Household> = mutableMapOf()
     private var nextHouseholdId: Int = 0
+    private var nextPeepId: Int = 0
     var tick: Long = 0L
     val clock: SimClock = SimClock()
+
+    // Demographic stats (reset daily)
+    var birthsToday: Int = 0; private set
+    var deathsToday: Int = 0; private set
+    var immigrantsToday: Int = 0; private set
+    var emigrantsToday: Int = 0; private set
 
     private val worldView = object : WorldView {
         override val map: WorldMap get() = this@TickEngine.map
@@ -31,6 +42,40 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
 
     fun addPeep(peep: Peep) {
         peeps[peep.id] = peep
+        if (peep.id >= nextPeepId) nextPeepId = peep.id + 1
+    }
+
+    fun removePeep(peepId: Int) {
+        val peep = peeps.remove(peepId) ?: return
+        map.peepsAt[peep.position]?.remove(peepId)
+        // Clean up household
+        val hId = peep.householdId
+        if (hId != null) {
+            val household = households[hId]
+            household?.removeMember(peepId)
+            if (household != null && household.size <= 1) {
+                // Dissolve single-member household
+                household.members.firstOrNull()?.let { lastId ->
+                    val last = peeps[lastId]
+                    last?.money = (last?.money ?: 0f) + household.sharedMoney
+                    last?.householdId = null
+                }
+                households.remove(hId)
+            }
+        }
+        // Dissolve partnership
+        peep.partnerId?.let { pid ->
+            peeps[pid]?.partnerId = null
+        }
+        // Inherit money to partner or lose it
+        peep.partnerId?.let { pid ->
+            peeps[pid]?.let { partner -> partner.money += peep.money }
+        }
+        // Remove from friendships
+        peep.friendships.keys.forEach { otherId ->
+            peeps[otherId]?.friendships?.remove(peepId)
+            peeps[otherId]?.interactionCount?.remove(peepId)
+        }
     }
 
     fun step() {
@@ -454,11 +499,113 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 }
                 household.sharedMoney = allowance * household.size
             }
+
+            // === Demographics (daily) ===
+            birthsToday = 0; deathsToday = 0; immigrantsToday = 0; emigrantsToday = 0
+
+            // Aging: 1 sim-day ≈ 1 year of life
+            peeps.values.forEach { peep ->
+                peep.age++
+                // Update schedule based on age
+                peep.schedule = when {
+                    peep.age < 6 -> ScheduleType.Retiree  // toddlers stay home
+                    peep.age < 18 -> ScheduleType.Student
+                    peep.age >= 65 -> ScheduleType.Retiree
+                    else -> peep.schedule  // keep current schedule
+                }
+            }
+
+            // Death
+            val dead = mutableListOf<Int>()
+            peeps.values.forEach { peep ->
+                val rate = Demographics.mortalityRate(peep.age, peep.needs.health)
+                if (rate > 0f && (tick + peep.id.toLong()) % ((1f / rate).toInt().coerceAtLeast(1)) == 0L) {
+                    dead.add(peep.id)
+                }
+            }
+            dead.forEach { id -> removePeep(id); deathsToday++ }
+
+            // Birth
+            households.values.toList().forEach { household ->
+                val members = household.members.mapNotNull { peeps[it] }
+                val partners = members.filter { it.isPartnered }
+                if (partners.size >= 2) {
+                    val a = partners[0]; val b = partners[1]
+                    val childrenInHousehold = members.count { it.isChild }
+                    if (Demographics.canHaveChild(a, b, map, childrenInHousehold)) {
+                        if ((tick + household.id.toLong()) % 33 == 0L) { // ~3% daily
+                            val childId = nextPeepId++
+                            val child = Peep(
+                                id = childId,
+                                name = NAMES[childId % NAMES.size],
+                                age = 0,
+                                gender = Gender.entries[childId % Gender.entries.size],
+                                position = a.position,
+                                homeId = household.homeId,
+                                schedule = ScheduleType.Retiree, // babies stay home
+                                householdId = household.id
+                            )
+                            addPeep(child)
+                            household.addMember(childId)
+                            birthsToday++
+                        }
+                    }
+                }
+            }
+
+            // Immigration
+            val unemployed = peeps.values.count { it.jobId == null && !it.isChild && !it.isRetired }
+            val jobSlots = map.buildings.values.filter { it.isWorkplace }
+                .sumOf { it.capacity - it.currentOccupants.size }
+            val housingSlots = map.buildings.values.filter { it.isResidential }
+                .sumOf { it.capacity - it.currentOccupants.size }
+            if (Demographics.shouldImmigrate(unemployed, jobSlots, housingSlots)) {
+                val count = (1 + (tick % 3)).toInt().coerceAtMost(3)
+                repeat(count) {
+                    val job = map.buildings.values.firstOrNull { it.isHiring }
+                    val home = map.buildings.values.firstOrNull { it.isResidential && !it.isFull }
+                    val pos = home?.cells?.firstOrNull() ?: map.buildings.values.firstOrNull()?.cells?.firstOrNull() ?: CellCoord(1, 1)
+                    val id = nextPeepId++
+                    val immigrant = Peep(
+                        id = id,
+                        name = NAMES[id % NAMES.size],
+                        age = 20 + (id * 7 % 20),
+                        gender = Gender.entries[id % Gender.entries.size],
+                        position = pos,
+                        homeId = home?.id,
+                        jobId = job?.id,
+                        money = 150f,
+                        brain = UtilityBrain(),
+                        schedule = ScheduleType.Worker
+                    )
+                    addPeep(immigrant)
+                    immigrantsToday++
+                }
+            }
+
+            // Emigration: peeps with 3+ critical needs for 5+ consecutive days
+            peeps.values.forEach { peep ->
+                if (Demographics.shouldEmigrate(peep)) {
+                    peep.criticalDays++
+                } else {
+                    peep.criticalDays = 0
+                }
+            }
+            val emigrants = peeps.values
+                .filter { it.criticalDays >= 5 && (tick + it.id.toLong()) % 10 == 0L } // ~10% daily
+                .map { it.id }
+            emigrants.forEach { id -> removePeep(id); emigrantsToday++ }
         }
     }
 
     companion object {
         private const val PARALLEL_THRESHOLD = 100
         const val TICKS_PER_DAY = 1440
+        private val NAMES = listOf(
+            "Alex", "Blake", "Casey", "Dana", "Ellis",
+            "Finley", "Gray", "Harper", "Indigo", "Jules",
+            "Kai", "Lane", "Morgan", "Nova", "Oakley",
+            "Parker", "Quinn", "River", "Sage", "Taylor"
+        )
     }
 }

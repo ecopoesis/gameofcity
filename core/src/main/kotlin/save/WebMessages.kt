@@ -21,6 +21,11 @@ data class PeepUpdateMessage(
     val hour: Int = 0,
     val minute: Int = 0,
     val day: Int = 1,
+    val population: Int = 0,
+    val births: Int = 0,
+    val deaths: Int = 0,
+    val immigrants: Int = 0,
+    val emigrants: Int = 0,
     val peeps: List<PeepPosition>
 )
 
