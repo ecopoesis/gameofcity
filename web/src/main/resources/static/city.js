@@ -152,10 +152,11 @@ function buildCity(data) {
 // --- Peep rendering ---
 function initPeeps(count) {
     if (peepMesh) scene.remove(peepMesh);
-    const geo = new THREE.SphereGeometry(3, 8, 6);
-    const mat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    const geo = new THREE.SphereGeometry(6, 8, 6);
+    const mat = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x333333 });
     peepMesh = new THREE.InstancedMesh(geo, mat, Math.max(count, 1));
     peepMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    peepMesh.frustumCulled = false;
     scene.add(peepMesh);
 }
 
