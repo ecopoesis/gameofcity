@@ -15,7 +15,12 @@ class HUD(private val engine: TickEngine, skin: Skin) {
     private val tickLabel  = Label("", skin)
     private val timeLabel  = Label("", skin)
     private val popLabel   = Label("", skin)
+    private val speedLabel = Label("", skin)
+    private val brainLabel = Label("", skin)
     private val pauseLabel = Label("[PAUSED]", skin).also { it.color = Color.YELLOW }
+
+    var speedFactor: Float = 1f
+    var brainType: String = "Utility"
 
     init {
         val table = Table()
@@ -23,7 +28,9 @@ class HUD(private val engine: TickEngine, skin: Skin) {
         table.top().padTop(6f).padLeft(10f).padRight(10f)
         table.add(tickLabel).padRight(20f)
         table.add(timeLabel).padRight(20f)
-        table.add(popLabel).expandX().left()
+        table.add(popLabel).padRight(20f)
+        table.add(speedLabel).padRight(20f)
+        table.add(brainLabel).expandX().left()
         table.add(pauseLabel)
         stage.addActor(table)
     }
@@ -37,6 +44,8 @@ class HUD(private val engine: TickEngine, skin: Skin) {
         tickLabel.setText("Tick: $tick")
         timeLabel.setText("Day $day  %02d:%02d".format(h, m))
         popLabel.setText("Pop: ${engine.peeps.size}")
+        speedLabel.setText("Speed: ${String.format("%.1f", speedFactor)}x")
+        brainLabel.setText("Brain: $brainType")
         pauseLabel.isVisible = paused
     }
 

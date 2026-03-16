@@ -365,9 +365,54 @@ function showPeepInspector(peepId) {
         html += needBar('Shelter', peep.shelter, '#cba6f7');
     }
 
+    // Edit sliders
+    html += '<div class="level-header" style="color:#a6adc8">Edit Needs</div>';
+    html += editSlider('Hunger', m ? m.hunger : peep.hunger, peepId);
+    html += editSlider('Sleep', m ? m.sleep : peep.fatigue, peepId);
+
+    // Per-peep brain selector
+    html += '<div class="level-header" style="color:#a6adc8">Brain</div>';
+    html += `<select class="brain-select" id="peep-brain-select" data-peep-id="${peepId}">
+        <option value="Utility" ${peep.brainType === 'Utility' ? 'selected' : ''}>Utility</option>
+        <option value="Pyramid" ${peep.brainType === 'Pyramid' ? 'selected' : ''}>Pyramid</option>
+        <option value="Wave" ${peep.brainType === 'Wave' ? 'selected' : ''}>Wave</option>
+        <option value="Random" ${peep.brainType === 'Random' ? 'selected' : ''}>Random</option>
+        <option value="Idle" ${peep.brainType === 'Idle' ? 'selected' : ''}>Idle</option>
+    </select>`;
+
     inspectorBody.innerHTML = html;
     inspectorEl.style.display = 'block';
     updateSelectionRing(peep.posX, peep.posY);
+
+    // Wire up edit slider events
+    inspectorBody.querySelectorAll('.edit-slider').forEach(slider => {
+        slider.oninput = () => {
+            const need = slider.dataset.need;
+            const val_ = parseFloat(slider.value);
+            slider.nextElementSibling.textContent = Math.round(val_ * 100) + '%';
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'command', action: 'setNeed',
+                    value: peepId,
+                    stringValue: `${need},${val_}`
+                }));
+            }
+        };
+    });
+
+    // Wire up brain selector
+    const brainSel = document.getElementById('peep-brain-select');
+    if (brainSel) {
+        brainSel.onchange = () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'command', action: 'setPeepBrain',
+                    value: peepId,
+                    stringValue: brainSel.value
+                }));
+            }
+        };
+    }
 }
 
 function showBuildingInspector(buildingId) {
@@ -399,6 +444,15 @@ function clearInspector() {
     selectedBuildingId = null;
     inspectorEl.style.display = 'none';
     if (selectionRing) { scene.remove(selectionRing); selectionRing = null; }
+}
+
+function editSlider(needName, value, peepId) {
+    const pct = Math.round(value * 100);
+    return `<div class="edit-row">
+        <span class="label">${needName}</span>
+        <input type="range" class="edit-slider" min="0" max="1" step="0.05" value="${value}" data-need="${needName}" data-peep="${peepId}">
+        <span>${pct}%</span>
+    </div>`;
 }
 
 function needBar(label, value, color) {

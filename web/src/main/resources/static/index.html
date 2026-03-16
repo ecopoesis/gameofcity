@@ -85,6 +85,25 @@
             border-radius: 3px;
             transition: width 0.3s;
         }
+        #inspector select, #inspector input[type=range] {
+            background: #313244;
+            color: #cdd6f4;
+            border: 1px solid #45475a;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 12px;
+            width: 100%;
+        }
+        #inspector .edit-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 4px 0;
+        }
+        #inspector .edit-row .label { min-width: 60px; flex-shrink: 0; }
+        #inspector .edit-row input { flex: 1; }
+        #inspector .edit-row span:last-child { min-width: 30px; text-align: right; }
+        #inspector .brain-select { margin: 6px 0; }
         #inspector .level-header {
             color: #a6adc8;
             font-weight: bold;

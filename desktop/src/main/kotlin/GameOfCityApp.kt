@@ -8,9 +8,11 @@ import com.badlogic.gdx.graphics.PerspectiveCamera
 import gen.CityGenConfig
 import gen.CityGenerator
 import gen.PeepSpawner
+import peep.*
 import rendering.CityRenderer
 import rendering.OrbitController
 import save.DesktopSaveManager
+import save.SaveConverter
 import tick.TickEngine
 import ui.GameSkin
 import ui.HUD
@@ -27,10 +29,13 @@ class GameOfCityApp : ApplicationAdapter() {
     private lateinit var skin: com.badlogic.gdx.scenes.scene2d.ui.Skin
 
     private var tickAccum    = 0f
-    private val tickDuration = 0.05f   // 20 ticks/second
+    private var tickDuration = 0.05f   // 20 ticks/second (default 1x)
     private var paused       = false
     private var verbose      = false
     private val logInterval  = 100L
+
+    private var currentBrainType = "Utility"
+    private val brainTypes = listOf("Utility", "Pyramid", "Wave", "Random", "Idle")
 
     override fun create() {
         val camera = PerspectiveCamera(67f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
@@ -62,6 +67,8 @@ class GameOfCityApp : ApplicationAdapter() {
             engine.map.height * CityRenderer.CS / 2f
         )
         hud       = HUD(engine, skin)
+        hud.brainType = currentBrainType
+        hud.speedFactor = 0.05f / tickDuration
         inspector = InspectorPanel(engine, skin)
         renderer  = CityRenderer(engine, orbitController)
     }
@@ -109,6 +116,25 @@ class GameOfCityApp : ApplicationAdapter() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
             verbose = !verbose
             println("[SimLogger] Verbose mode ${if (verbose) "ON" else "OFF"}")
+        }
+
+        // B = cycle global brain type
+        if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
+            val idx = brainTypes.indexOf(currentBrainType)
+            currentBrainType = brainTypes[(idx + 1) % brainTypes.size]
+            engine.peeps.values.forEach { it.brain = SaveConverter.brainFromName(currentBrainType) }
+            hud.brainType = currentBrainType
+            println("[Brain] Switched all peeps to $currentBrainType")
+        }
+
+        // +/= = speed up, - = slow down
+        if (Gdx.input.isKeyJustPressed(Input.Keys.EQUALS) || Gdx.input.isKeyJustPressed(Input.Keys.PLUS)) {
+            tickDuration = (tickDuration - 0.01f).coerceAtLeast(0.01f)
+            hud.speedFactor = 0.05f / tickDuration
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.MINUS)) {
+            tickDuration = (tickDuration + 0.01f).coerceAtMost(1f)
+            hud.speedFactor = 0.05f / tickDuration
         }
 
         // N = generate new city

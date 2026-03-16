@@ -164,5 +164,35 @@ private fun handleCommand(text: String) {
                 peep.brain = SaveConverter.brainFromName(brainName)
             }
         }
+        "setPeepBrain" -> {
+            val peepId = cmd.value ?: return
+            val brainName = cmd.stringValue ?: return
+            simEngine.peeps[peepId]?.brain = SaveConverter.brainFromName(brainName)
+        }
+        "setNeed" -> {
+            val peepId = cmd.value ?: return
+            val parts = cmd.stringValue?.split(",") ?: return
+            if (parts.size >= 2) {
+                val needName = parts[0]
+                val needValue = parts[1].toFloatOrNull() ?: return
+                val peep = simEngine.peeps[peepId] ?: return
+                when (needName) {
+                    "Hunger" -> peep.needs.hunger = needValue.coerceIn(0f, 1f)
+                    "Sleep" -> peep.needs.sleep = needValue.coerceIn(0f, 1f)
+                    "Thirst" -> peep.needs.thirst = needValue.coerceIn(0f, 1f)
+                    "Warmth" -> peep.needs.warmth = needValue.coerceIn(0f, 1f)
+                    "Shelter" -> peep.needs.shelter = needValue.coerceIn(0f, 1f)
+                    "Health" -> peep.needs.health = needValue.coerceIn(0f, 1f)
+                    "Friendship" -> peep.needs.friendship = needValue.coerceIn(0f, 1f)
+                    "Family" -> peep.needs.family = needValue.coerceIn(0f, 1f)
+                    "Community" -> peep.needs.community = needValue.coerceIn(0f, 1f)
+                    "Recognition" -> peep.needs.recognition = needValue.coerceIn(0f, 1f)
+                    "Accomplishment" -> peep.needs.accomplishment = needValue.coerceIn(0f, 1f)
+                    "Creativity" -> peep.needs.creativity = needValue.coerceIn(0f, 1f)
+                    "Learning" -> peep.needs.learning = needValue.coerceIn(0f, 1f)
+                    "Purpose" -> peep.needs.purpose = needValue.coerceIn(0f, 1f)
+                }
+            }
+        }
     }
 }

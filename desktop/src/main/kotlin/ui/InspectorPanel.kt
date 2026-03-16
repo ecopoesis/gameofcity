@@ -18,16 +18,11 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
     private var selectedPeepId: Int? = null
     private var selectedBuildingId: Int? = null
 
-    // Dynamic peep widgets updated in-place each frame
-    private var hungerBar: ProgressBar? = null
-    private var sleepBar: ProgressBar? = null
-    private var friendshipBar: ProgressBar? = null
-    private var creativityBar: ProgressBar? = null
+    // Dynamic widgets updated in-place each frame
+    private val needBars = mutableMapOf<NeedType, ProgressBar>()
     private var actionLabel: Label? = null
     private var moneyLabel: Label? = null
     private var homeLabel: Label? = null
-
-    // Dynamic building widget
     private var insideLabel: Label? = null
     private var friendsLabel: Label? = null
 
@@ -65,10 +60,11 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
     }
 
     private fun updatePeep(p: Peep) {
-        hungerBar?.also     { it.value = p.needs.hunger;     it.color = barColor(p.needs.hunger,     0.6f) }
-        sleepBar?.also      { it.value = p.needs.sleep;      it.color = barColor(p.needs.sleep,      0.8f) }
-        friendshipBar?.also { it.value = p.needs.friendship; it.color = barColor(p.needs.friendship, 0.7f) }
-        creativityBar?.also { it.value = p.needs.creativity; it.color = barColor(p.needs.creativity, 0.7f) }
+        for ((needType, bar) in needBars) {
+            val v = p.needs.get(needType)
+            bar.value = v
+            bar.color = barColor(v, NEED_THRESHOLDS[needType] ?: 0.6f)
+        }
         actionLabel?.setText(fmtAction(p.lastAction))
         moneyLabel?.setText("$%.2f".format(p.money))
         homeLabel?.setText(p.homeId?.let { "bldg$it" } ?: "EVICTED")
@@ -101,7 +97,7 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
     }
 
     private fun clearRefs() {
-        hungerBar = null; sleepBar = null; friendshipBar = null; creativityBar = null
+        needBars.clear()
         actionLabel = null; moneyLabel = null; homeLabel = null
         insideLabel = null; friendsLabel = null
     }
@@ -111,12 +107,12 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         win.isMovable = true
 
         val t = Table(skin).pad(8f)
-        val C0 = 115f; val C1 = 155f
+        val C0 = 130f; val C1 = 155f
 
         fun addRow(label: String, widget: Actor) {
             t.add(Label(label, skin, "dim")).width(C0).left()
             t.add(widget).width(C1).left()
-            t.row().padTop(4f)
+            t.row().padTop(2f)
         }
 
         fun dynLabel(label: String, value: String): Label {
@@ -125,11 +121,12 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
             return l
         }
 
-        fun needBar(label: String, value: Float): ProgressBar {
+        fun needBar(needType: NeedType, label: String, value: Float): ProgressBar {
             val bar = ProgressBar(0f, 1f, 0.01f, false, skin)
             bar.value = value
-            bar.color = barColor(value, 0.6f)
+            bar.color = barColor(value, NEED_THRESHOLDS[needType] ?: 0.6f)
             addRow(label, bar)
+            needBars[needType] = bar
             return bar
         }
 
@@ -138,15 +135,18 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
             .colspan(2).left().padBottom(8f)
         t.row()
 
-        // Needs display
-        hungerBar     = needBar("Hunger",     p.needs.hunger)
-        sleepBar      = needBar("Sleep",      p.needs.sleep)
-        friendshipBar = needBar("Friendship", p.needs.friendship)
-        creativityBar = needBar("Creativity", p.needs.creativity)
+        // Maslow needs grouped by level
+        for (level in MASLOW_DISPLAY) {
+            t.add(Label(level.name, skin, "dim")).colspan(2).left().padTop(6f)
+            t.row()
+            for ((needType, displayName) in level.needs) {
+                needBar(needType, "  $displayName", p.needs.get(needType))
+            }
+        }
 
         t.add().colspan(2).height(4f); t.row()
 
-        // Edit sliders
+        // Edit sliders for key needs
         fun editSlider(label: String, init: Float, setter: (Float) -> Unit) {
             val sl = Slider(0f, 1f, 0.05f, false, skin)
             sl.value = init
@@ -171,11 +171,11 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
 
         // Brain selector
         t.add(Label("Brain", skin, "dim")).width(C0).left()
-        val utilBtn    = TextButton("Utility", skin)
-        val pyramidBtn = TextButton("Pyramid", skin)
-        val waveBtn    = TextButton("Wave",    skin)
-        val randBtn    = TextButton("Random",  skin)
-        val idleBtn    = TextButton("Idle",    skin)
+        val utilBtn    = TextButton("Util", skin)
+        val pyramidBtn = TextButton("Pyr", skin)
+        val waveBtn    = TextButton("Wave", skin)
+        val randBtn    = TextButton("Rand", skin)
+        val idleBtn    = TextButton("Idle", skin)
 
         val group = ButtonGroup<TextButton>()
         group.setMinCheckCount(0); group.setMaxCheckCount(1)
@@ -202,10 +202,10 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         brainBtn(idleBtn)    { IdleBrain()    }
 
         val brainRow = Table()
-        brainRow.add(utilBtn).padRight(4f)
-        brainRow.add(pyramidBtn).padRight(4f)
-        brainRow.add(waveBtn).padRight(4f)
-        brainRow.add(randBtn).padRight(4f)
+        brainRow.add(utilBtn).padRight(3f)
+        brainRow.add(pyramidBtn).padRight(3f)
+        brainRow.add(waveBtn).padRight(3f)
+        brainRow.add(randBtn).padRight(3f)
         brainRow.add(idleBtn)
         t.add(brainRow).left(); t.row().padTop(10f)
 
@@ -247,6 +247,28 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         if (b.subtype != null) row("Subtype", b.subtype!!.name)
         row("Cells", "${b.cells.size}")
 
+        // Show residents and workers
+        val residents = engine.peeps.values.filter { it.homeId == b.id }
+        val workers = engine.peeps.values.filter { it.jobId == b.id }
+        if (residents.isNotEmpty()) {
+            t.add(Label("Residents", skin, "dim")).colspan(2).left().padTop(6f); t.row()
+            residents.take(5).forEach { p ->
+                t.add(Label("  ${p.name}", skin)).colspan(2).left(); t.row()
+            }
+            if (residents.size > 5) {
+                t.add(Label("  +${residents.size - 5} more", skin, "dim")).colspan(2).left(); t.row()
+            }
+        }
+        if (workers.isNotEmpty()) {
+            t.add(Label("Workers", skin, "dim")).colspan(2).left().padTop(6f); t.row()
+            workers.take(5).forEach { p ->
+                t.add(Label("  ${p.name}", skin)).colspan(2).left(); t.row()
+            }
+            if (workers.size > 5) {
+                t.add(Label("  +${workers.size - 5} more", skin, "dim")).colspan(2).left(); t.row()
+            }
+        }
+
         val close = TextButton("Close", skin)
         close.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent, actor: Actor) = clear()
@@ -287,4 +309,42 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
     fun render() { stage.act(); stage.draw() }
     fun resize(w: Int, h: Int) = stage.viewport.update(w, h, true)
     fun dispose() = stage.dispose()
+
+    companion object {
+        private data class LevelDisplay(val name: String, val needs: List<Pair<NeedType, String>>)
+
+        private val MASLOW_DISPLAY = listOf(
+            LevelDisplay("PHYSIOLOGICAL", listOf(
+                NeedType.Hunger to "Hunger", NeedType.Thirst to "Thirst",
+                NeedType.Sleep to "Sleep", NeedType.Warmth to "Warmth"
+            )),
+            LevelDisplay("SAFETY", listOf(
+                NeedType.Shelter to "Shelter", NeedType.Health to "Health",
+                NeedType.Financial to "Financial"
+            )),
+            LevelDisplay("LOVE/BELONGING", listOf(
+                NeedType.Friendship to "Friendship", NeedType.Family to "Family",
+                NeedType.Community to "Community"
+            )),
+            LevelDisplay("ESTEEM", listOf(
+                NeedType.Recognition to "Recognition", NeedType.Accomplishment to "Accomplishment",
+                NeedType.Status to "Status"
+            )),
+            LevelDisplay("SELF-ACTUALIZATION", listOf(
+                NeedType.Creativity to "Creativity", NeedType.Learning to "Learning",
+                NeedType.Purpose to "Purpose"
+            ))
+        )
+
+        private val NEED_THRESHOLDS = mapOf(
+            NeedType.Hunger to 0.6f, NeedType.Thirst to 0.6f,
+            NeedType.Sleep to 0.8f, NeedType.Warmth to 0.7f,
+            NeedType.Shelter to 0.7f, NeedType.Health to 0.7f,
+            NeedType.Financial to 0.7f, NeedType.Friendship to 0.7f,
+            NeedType.Family to 0.7f, NeedType.Community to 0.7f,
+            NeedType.Recognition to 0.7f, NeedType.Accomplishment to 0.7f,
+            NeedType.Status to 0.7f, NeedType.Creativity to 0.7f,
+            NeedType.Learning to 0.7f, NeedType.Purpose to 0.7f
+        )
+    }
 }

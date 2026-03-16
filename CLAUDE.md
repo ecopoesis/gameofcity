@@ -64,16 +64,24 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | Phase | Issue | Status |
 |---|---|---|
 | 1 — Foundation | — | ✅ Done |
-| 2 — Peeps + Tick Engine | #1 | Open |
-| 3 — Inspector UI + Economy | #2 | Open |
-| 4 — 3D Camera + Relationships | #3 | Open |
-| 5 — Procedural Generation + Polish | #4 | Open |
+| 2 — Peeps + Tick Engine | #1 | ✅ Done |
+| 3 — Inspector UI + Economy | #2 | ✅ Done |
+| 4 — 3D Camera + Relationships | #3 | ✅ Done |
+| 5 — Procedural Generation + Polish | #4 | ✅ Done |
 | Maslow Needs | #13 | ✅ Done |
 | Building Subtypes + Actions | #14 | ✅ Done |
 | PyramidBrain | #15 | ✅ Done |
 | WaveBrain | #16 | ✅ Done |
 | Brain Type + Renderers | #17 | ✅ Done |
 | City Generation Improvements | #18 | ✅ Done |
+| Day/Night Cycle + Schedules | #19 | Open |
+| Building Capacity + Queuing | #20 | Open |
+| Labor Market + Wages | #21 | Open |
+| Housing Market + Homelessness | #22 | Open |
+| Relationships + Households | #23 | Open |
+| Life Events + Demographics | #24 | Open |
+| Emergent Events + Stats Dashboard | #26 | Open |
+| Environment + City Services | #27 | Open |
 
 ## Key Files
 
