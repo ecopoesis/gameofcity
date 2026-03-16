@@ -21,11 +21,13 @@ object SaveConverter {
             BuildingData(
                 id = b.id,
                 type = b.type.name,
+                subtype = b.subtype?.name,
                 cells = b.cells.map { CoordData(it.x, it.y, it.z) }
             )
         }
 
         val peeps = engine.peeps.values.map { p ->
+            val n = p.needs
             PeepData(
                 id = p.id,
                 name = p.name,
@@ -37,11 +39,29 @@ object SaveConverter {
                 homeId = p.homeId,
                 jobId = p.jobId,
                 money = p.money,
-                hunger = p.needs.hunger,
-                fatigue = p.needs.fatigue,
-                shelter = p.needs.shelter,
-                social = p.needs.social,
-                entertainment = p.needs.entertainment,
+                // v1 compat fields
+                hunger = n.hunger,
+                fatigue = n.sleep,
+                shelter = n.shelter,
+                social = n.friendship,
+                entertainment = n.creativity,
+                // v2 Maslow
+                maslowNeeds = MaslowNeedsData(
+                    hunger = n.hunger,
+                    thirst = n.thirst,
+                    sleep = n.sleep,
+                    warmth = n.warmth,
+                    shelter = n.shelter,
+                    health = n.health,
+                    friendship = n.friendship,
+                    family = n.family,
+                    community = n.community,
+                    recognition = n.recognition,
+                    accomplishment = n.accomplishment,
+                    creativity = n.creativity,
+                    learning = n.learning,
+                    purpose = n.purpose
+                ),
                 brainType = brainTypeName(p.brain),
                 friendships = p.friendships.toMap(),
                 relationships = p.relationships.toMap()
@@ -65,6 +85,9 @@ object SaveConverter {
             val building = Building(
                 id = b.id,
                 type = BuildingType.valueOf(b.type),
+                subtype = b.subtype?.let { name ->
+                    try { BuildingSubtype.valueOf(name) } catch (_: Exception) { null }
+                },
                 cells = b.cells.map { CellCoord(it.x, it.y, it.z) }.toSet()
             )
             // Register building without overwriting cell terrain (already restored)
@@ -75,6 +98,36 @@ object SaveConverter {
         engine.tick = data.tick
 
         for (pd in data.peeps) {
+            val needs = if (pd.maslowNeeds != null) {
+                // v2 format
+                val m = pd.maslowNeeds
+                MaslowNeeds(
+                    hunger = m.hunger,
+                    thirst = m.thirst,
+                    sleep = m.sleep,
+                    warmth = m.warmth,
+                    shelter = m.shelter,
+                    health = m.health,
+                    friendship = m.friendship,
+                    family = m.family,
+                    community = m.community,
+                    recognition = m.recognition,
+                    accomplishment = m.accomplishment,
+                    creativity = m.creativity,
+                    learning = m.learning,
+                    purpose = m.purpose
+                )
+            } else {
+                // v1 compat: map old flat fields
+                MaslowNeeds(
+                    hunger = pd.hunger,
+                    sleep = pd.fatigue,
+                    shelter = pd.shelter,
+                    friendship = pd.social,
+                    creativity = pd.entertainment
+                )
+            }
+
             val peep = Peep(
                 id = pd.id,
                 name = pd.name,
@@ -84,13 +137,7 @@ object SaveConverter {
                 homeId = pd.homeId,
                 jobId = pd.jobId,
                 money = pd.money,
-                needs = Needs(
-                    hunger = pd.hunger,
-                    fatigue = pd.fatigue,
-                    shelter = pd.shelter,
-                    social = pd.social,
-                    entertainment = pd.entertainment
-                ),
+                needs = needs,
                 brain = brainFromName(pd.brainType),
                 friendships = pd.friendships.toMutableMap(),
                 relationships = pd.relationships.toMutableMap()
@@ -101,15 +148,19 @@ object SaveConverter {
         return engine
     }
 
-    private fun brainTypeName(brain: Brain): String = when (brain) {
-        is UtilityBrain -> "Utility"
-        is RandomBrain  -> "Random"
-        is IdleBrain    -> "Idle"
-        else            -> "Idle"
+    fun brainTypeName(brain: Brain): String = when (brain) {
+        is UtilityBrain  -> "Utility"
+        is PyramidBrain  -> "Pyramid"
+        is WaveBrain     -> "Wave"
+        is RandomBrain   -> "Random"
+        is IdleBrain     -> "Idle"
+        else             -> "Idle"
     }
 
-    private fun brainFromName(name: String): Brain = when (name) {
+    fun brainFromName(name: String): Brain = when (name) {
         "Utility" -> UtilityBrain()
+        "Pyramid" -> PyramidBrain()
+        "Wave"    -> WaveBrain()
         "Random"  -> RandomBrain()
         else      -> IdleBrain()
     }

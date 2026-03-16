@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SaveData(
-    val version: Int = 1,
+    val version: Int = 2,
     val tick: Long,
     val map: MapData,
     val peeps: List<PeepData>
@@ -31,11 +31,30 @@ data class CellData(
 data class BuildingData(
     val id: Int,
     val type: String,
+    val subtype: String? = null,
     val cells: List<CoordData>
 )
 
 @Serializable
 data class CoordData(val x: Int, val y: Int, val z: Int = 0)
+
+@Serializable
+data class MaslowNeedsData(
+    val hunger: Float = 0f,
+    val thirst: Float = 0f,
+    val sleep: Float = 0f,
+    val warmth: Float = 0f,
+    val shelter: Float = 0f,
+    val health: Float = 0f,
+    val friendship: Float = 0f,
+    val family: Float = 0f,
+    val community: Float = 0f,
+    val recognition: Float = 0f,
+    val accomplishment: Float = 0f,
+    val creativity: Float = 0f,
+    val learning: Float = 0f,
+    val purpose: Float = 0f
+)
 
 @Serializable
 data class PeepData(
@@ -49,11 +68,14 @@ data class PeepData(
     val homeId: Int? = null,
     val jobId: Int? = null,
     val money: Float,
-    val hunger: Float,
-    val fatigue: Float,
-    val shelter: Float,
-    val social: Float,
-    val entertainment: Float,
+    // v1 flat fields (kept for backward compat)
+    val hunger: Float = 0f,
+    val fatigue: Float = 0f,
+    val shelter: Float = 0f,
+    val social: Float = 0f,
+    val entertainment: Float = 0f,
+    // v2 Maslow needs
+    val maslowNeeds: MaslowNeedsData? = null,
     val brainType: String,
     val friendships: Map<Int, Float> = emptyMap(),
     val relationships: Map<Int, String> = emptyMap()

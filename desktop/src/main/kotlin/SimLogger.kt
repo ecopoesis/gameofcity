@@ -14,7 +14,6 @@ object SimLogger {
         val day = tick / TICKS_PER_DAY + 1
         val h = timeInDay / 60
         val m = timeInDay % 60
-        val simSeconds = tick * 3   // 1 tick ≈ 3 sim-minutes → readable pace
 
         val peeps = engine.peeps.values.toList()
         val map = engine.map
@@ -22,7 +21,7 @@ object SimLogger {
         // Aggregate action counts
         var working = 0; var routing = 0; var home = 0; var eating = 0; var idle = 0
         var totalHunger = 0f; var maxHunger = 0f
-        var totalFatigue = 0f; var maxFatigue = 0f
+        var totalSleep = 0f; var maxSleep = 0f
 
         peeps.forEach { p ->
             when (p.lastAction) {
@@ -32,13 +31,13 @@ object SimLogger {
                 is Action.Eat      -> eating++
                 else               -> idle++
             }
-            totalHunger += p.needs.hunger;  if (p.needs.hunger  > maxHunger)  maxHunger  = p.needs.hunger
-            totalFatigue += p.needs.fatigue; if (p.needs.fatigue > maxFatigue) maxFatigue = p.needs.fatigue
+            totalHunger += p.needs.hunger;  if (p.needs.hunger > maxHunger) maxHunger = p.needs.hunger
+            totalSleep  += p.needs.sleep;   if (p.needs.sleep  > maxSleep)  maxSleep  = p.needs.sleep
         }
 
         val n = peeps.size.coerceAtLeast(1)
         val avgH = totalHunger / n
-        val avgF = totalFatigue / n
+        val avgS = totalSleep / n
 
         // Building occupancy from peep positions
         val occupancy = mutableMapOf<BuildingId, Int>()
@@ -50,22 +49,22 @@ object SimLogger {
         println()
         println("=== TICK $tick | Day $day ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')} ===")
         println("Population: ${peeps.size} | Working: $working | Routing: $routing | Home: $home | Eating: $eating | Idle: $idle")
-        println("Needs:  hunger avg=${fmtN(avgH)} max=${fmtN(maxHunger)}  fatigue avg=${fmtN(avgF)} max=${fmtN(maxFatigue)}")
+        println("Needs:  hunger avg=${fmtN(avgH)} max=${fmtN(maxHunger)}  sleep avg=${fmtN(avgS)} max=${fmtN(maxSleep)}")
 
         println()
         println("PEEPS (first $SAMPLE_PEEPS):")
         peeps.take(SAMPLE_PEEPS).forEach { p ->
             val pos    = "(${p.position.x},${p.position.y})"
-            val hStr   = "H=${fmtN(p.needs.hunger)}${if (p.needs.hunger  > 0.6f) "★" else " "}"
-            val fStr   = "F=${fmtN(p.needs.fatigue)}${if (p.needs.fatigue > 0.8f) "★" else " "}"
+            val hStr   = "H=${fmtN(p.needs.hunger)}${if (p.needs.hunger > 0.6f) "★" else " "}"
+            val sStr   = "S=${fmtN(p.needs.sleep)}${if (p.needs.sleep > 0.8f) "★" else " "}"
             val action = fmtAction(p.lastAction)
-            println(" P${p.id.toString().padStart(2,'0')} ${p.name.padEnd(12)} ${pos.padEnd(10)} $hStr $fStr  $action")
+            println(" P${p.id.toString().padStart(2,'0')} ${p.name.padEnd(12)} ${pos.padEnd(10)} $hStr $sStr  $action")
         }
 
         println()
         println("BUILDINGS:")
         map.buildings.values.sortedBy { it.id }.forEach { b ->
-            val typeTag = b.type.name.take(11).padEnd(11)
+            val typeTag = (b.subtype?.name ?: b.type.name).take(15).padEnd(15)
             val occ     = occupancy[b.id] ?: 0
             val status  = if (b.type == BuildingType.Residential) "occupants=$occ" else "inside=$occ"
             println(" bldg${b.id} $typeTag  $status")
@@ -75,11 +74,18 @@ object SimLogger {
     private fun fmtN(f: Float) = "%.2f".format(f)
 
     private fun fmtAction(a: Action): String = when (a) {
-        is Action.Work     -> "Work(bldg${a.buildingId})"
-        is Action.Eat      -> "Eat(bldg${a.buildingId})"
-        is Action.Sleep    -> "Sleep(bldg${a.buildingId})"
-        is Action.MoveTo   -> "MoveTo(${a.target.x},${a.target.y})"
+        is Action.Work      -> "Work(bldg${a.buildingId})"
+        is Action.Eat       -> "Eat(bldg${a.buildingId})"
+        is Action.Drink     -> "Drink(bldg${a.buildingId})"
+        is Action.Sleep     -> "Sleep(bldg${a.buildingId})"
+        is Action.Shop      -> "Shop(bldg${a.buildingId})"
+        is Action.Heal      -> "Heal(bldg${a.buildingId})"
+        is Action.Learn     -> "Learn(bldg${a.buildingId})"
+        is Action.Exercise  -> "Exercise(bldg${a.buildingId})"
+        is Action.Relax     -> "Relax(bldg${a.buildingId})"
+        is Action.Watch     -> "Watch(bldg${a.buildingId})"
+        is Action.MoveTo    -> "MoveTo(${a.target.x},${a.target.y})"
         is Action.Socialize -> "Socialize(p${a.targetPeepId})"
-        Action.Idle        -> "Idle"
+        Action.Idle         -> "Idle"
     }
 }

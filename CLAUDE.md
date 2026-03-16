@@ -56,6 +56,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 - When work is done and pushed to `main`, close the issue
 - **Do not open PRs** unless explicitly asked — commit directly to `main`
 - New work identified during implementation should be filed as a new issue, not done silently
+- When planning together, always create GitHub issues for each step of the plan before starting implementation
 
 ## Roadmap (GitHub Issues)
 

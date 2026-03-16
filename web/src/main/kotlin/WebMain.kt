@@ -10,16 +10,18 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
+import peep.*
 import save.CommandMessage
+import save.SaveConverter
 import tick.TickEngine
 import java.awt.Desktop
 import java.net.URI
 import kotlin.time.Duration.Companion.seconds
 
-private val json = Json { prettyPrint = false; encodeDefaults = true }
+private val json = Json { prettyPrint = false; encodeDefaults = true; ignoreUnknownKeys = true }
 
 @Volatile
-private var simEngine: TickEngine = createEngine()
+private var simEngine: TickEngine = createEngine(CityGenConfig())
 
 @Volatile
 private var paused = false
@@ -27,12 +29,15 @@ private var paused = false
 @Volatile
 private var tickDelayMs = 50L // 20 ticks/sec
 
+@Volatile
+private var currentBrainType = "Utility"
+
 private val broadcaster = SimBroadcaster(json)
 
-private fun createEngine(): TickEngine {
-    val map = CityGenerator.generate(CityGenConfig())
+private fun createEngine(config: CityGenConfig): TickEngine {
+    val map = CityGenerator.generate(config)
     val eng = TickEngine(map)
-    PeepSpawner.spawn(eng, 50)
+    PeepSpawner.spawn(eng, config.peepCount)
     return eng
 }
 
@@ -103,7 +108,6 @@ fun main(args: Array<String>) {
     }
 
     if (!headless) {
-        // Open browser after a short delay to let server bind
         Thread {
             Thread.sleep(1000)
             try {
@@ -128,11 +132,37 @@ private fun handleCommand(text: String) {
         "pause" -> paused = true
         "resume" -> paused = false
         "generate" -> {
-            simEngine = createEngine()
+            val config = CityGenConfig(
+                width = cmd.value ?: 40,
+                height = cmd.value ?: 40,
+                peepCount = 50,
+                organicLevel = 0f
+            )
+            simEngine = createEngine(config)
+        }
+        "generateWithConfig" -> {
+            // Parse config from stringValue as "width,height,peepCount,organicLevel"
+            val parts = cmd.stringValue?.split(",") ?: return
+            if (parts.size >= 4) {
+                val config = CityGenConfig(
+                    width = parts[0].toIntOrNull() ?: 40,
+                    height = parts[1].toIntOrNull() ?: 40,
+                    peepCount = parts[2].toIntOrNull() ?: 50,
+                    organicLevel = parts[3].toFloatOrNull() ?: 0f
+                )
+                simEngine = createEngine(config)
+            }
         }
         "setSpeed" -> {
             val v = cmd.value ?: return
             tickDelayMs = v.toLong().coerceIn(10, 1000)
+        }
+        "setBrainType" -> {
+            val brainName = cmd.stringValue ?: return
+            currentBrainType = brainName
+            simEngine.peeps.values.forEach { peep ->
+                peep.brain = SaveConverter.brainFromName(brainName)
+            }
         }
     }
 }

@@ -49,6 +49,7 @@ class SaveLoadTest : StringSpec({
             rp.jobId shouldBe peep.jobId
             rp.money.shouldBeBetween(peep.money - 0.01f, peep.money + 0.01f, 0f)
             rp.needs.hunger.shouldBeBetween(peep.needs.hunger - 0.001f, peep.needs.hunger + 0.001f, 0f)
+            rp.needs.sleep.shouldBeBetween(peep.needs.sleep - 0.001f, peep.needs.sleep + 0.001f, 0f)
         }
     }
 

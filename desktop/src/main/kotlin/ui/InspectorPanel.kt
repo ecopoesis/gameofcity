@@ -20,9 +20,9 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
 
     // Dynamic peep widgets updated in-place each frame
     private var hungerBar: ProgressBar? = null
-    private var fatigueBar: ProgressBar? = null
-    private var socialBar: ProgressBar? = null
-    private var entBar: ProgressBar? = null
+    private var sleepBar: ProgressBar? = null
+    private var friendshipBar: ProgressBar? = null
+    private var creativityBar: ProgressBar? = null
     private var actionLabel: Label? = null
     private var moneyLabel: Label? = null
     private var homeLabel: Label? = null
@@ -65,10 +65,10 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
     }
 
     private fun updatePeep(p: Peep) {
-        hungerBar?.also  { it.value = p.needs.hunger;        it.color = barColor(p.needs.hunger,  0.6f) }
-        fatigueBar?.also { it.value = p.needs.fatigue;       it.color = barColor(p.needs.fatigue, 0.8f) }
-        socialBar?.also  { it.value = p.needs.social;        it.color = barColor(p.needs.social,  0.7f) }
-        entBar?.also     { it.value = p.needs.entertainment; it.color = barColor(p.needs.entertainment, 0.7f) }
+        hungerBar?.also     { it.value = p.needs.hunger;     it.color = barColor(p.needs.hunger,     0.6f) }
+        sleepBar?.also      { it.value = p.needs.sleep;      it.color = barColor(p.needs.sleep,      0.8f) }
+        friendshipBar?.also { it.value = p.needs.friendship; it.color = barColor(p.needs.friendship, 0.7f) }
+        creativityBar?.also { it.value = p.needs.creativity; it.color = barColor(p.needs.creativity, 0.7f) }
         actionLabel?.setText(fmtAction(p.lastAction))
         moneyLabel?.setText("$%.2f".format(p.money))
         homeLabel?.setText(p.homeId?.let { "bldg$it" } ?: "EVICTED")
@@ -101,7 +101,7 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
     }
 
     private fun clearRefs() {
-        hungerBar = null; fatigueBar = null; socialBar = null; entBar = null
+        hungerBar = null; sleepBar = null; friendshipBar = null; creativityBar = null
         actionLabel = null; moneyLabel = null; homeLabel = null
         insideLabel = null; friendsLabel = null
     }
@@ -139,10 +139,10 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         t.row()
 
         // Needs display
-        hungerBar  = needBar("Hunger",        p.needs.hunger)
-        fatigueBar = needBar("Fatigue",       p.needs.fatigue)
-        socialBar  = needBar("Social",        p.needs.social)
-        entBar     = needBar("Entertainment", p.needs.entertainment)
+        hungerBar     = needBar("Hunger",     p.needs.hunger)
+        sleepBar      = needBar("Sleep",      p.needs.sleep)
+        friendshipBar = needBar("Friendship", p.needs.friendship)
+        creativityBar = needBar("Creativity", p.needs.creativity)
 
         t.add().colspan(2).height(4f); t.row()
 
@@ -155,8 +155,8 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
             })
             addRow("  Edit $label", sl)
         }
-        editSlider("Hunger",  p.needs.hunger)  { v -> engine.peeps[p.id]?.needs?.hunger  = v }
-        editSlider("Fatigue", p.needs.fatigue) { v -> engine.peeps[p.id]?.needs?.fatigue = v }
+        editSlider("Hunger", p.needs.hunger) { v -> engine.peeps[p.id]?.needs?.hunger = v }
+        editSlider("Sleep",  p.needs.sleep)  { v -> engine.peeps[p.id]?.needs?.sleep  = v }
 
         t.add().colspan(2).height(4f); t.row()
 
@@ -171,16 +171,19 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
 
         // Brain selector
         t.add(Label("Brain", skin, "dim")).width(C0).left()
-        val utilBtn = TextButton("Utility", skin)
-        val randBtn = TextButton("Random",  skin)
-        val idleBtn = TextButton("Idle",    skin)
+        val utilBtn    = TextButton("Utility", skin)
+        val pyramidBtn = TextButton("Pyramid", skin)
+        val waveBtn    = TextButton("Wave",    skin)
+        val randBtn    = TextButton("Random",  skin)
+        val idleBtn    = TextButton("Idle",    skin)
 
-        // ButtonGroup enforces single-select
         val group = ButtonGroup<TextButton>()
         group.setMinCheckCount(0); group.setMaxCheckCount(1)
-        group.add(utilBtn, randBtn, idleBtn)
+        group.add(utilBtn, pyramidBtn, waveBtn, randBtn, idleBtn)
         when (p.brain) {
             is UtilityBrain -> utilBtn.isChecked = true
+            is PyramidBrain -> pyramidBtn.isChecked = true
+            is WaveBrain    -> waveBtn.isChecked = true
             is RandomBrain  -> randBtn.isChecked = true
             else            -> idleBtn.isChecked = true
         }
@@ -192,12 +195,16 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
                     if (btn.isChecked) engine.peeps[p.id]?.brain = factory()
                 }
             })
-        brainBtn(utilBtn) { UtilityBrain() }
-        brainBtn(randBtn) { RandomBrain()  }
-        brainBtn(idleBtn) { IdleBrain()    }
+        brainBtn(utilBtn)    { UtilityBrain() }
+        brainBtn(pyramidBtn) { PyramidBrain() }
+        brainBtn(waveBtn)    { WaveBrain()    }
+        brainBtn(randBtn)    { RandomBrain()  }
+        brainBtn(idleBtn)    { IdleBrain()    }
 
         val brainRow = Table()
         brainRow.add(utilBtn).padRight(4f)
+        brainRow.add(pyramidBtn).padRight(4f)
+        brainRow.add(waveBtn).padRight(4f)
         brainRow.add(randBtn).padRight(4f)
         brainRow.add(idleBtn)
         t.add(brainRow).left(); t.row().padTop(10f)
@@ -227,7 +234,8 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
             return l
         }
 
-        t.add(Label("bldg${b.id}  —  ${b.type.name}", skin, "header"))
+        val displayName = b.subtype?.name ?: b.type.name
+        t.add(Label("bldg${b.id}  -  $displayName", skin, "header"))
             .colspan(2).left().padBottom(8f)
         t.row()
 
@@ -235,6 +243,8 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
             engine.map.getCell(p.position)?.buildingId == b.id
         }
         insideLabel = row("Inside now", "$inside")
+        row("Category", b.type.name)
+        if (b.subtype != null) row("Subtype", b.subtype!!.name)
         row("Cells", "${b.cells.size}")
 
         val close = TextButton("Close", skin)
@@ -261,8 +271,15 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
     private fun fmtAction(a: Action): String = when (a) {
         is Action.Work      -> "Work(bldg${a.buildingId})"
         is Action.Eat       -> "Eat(bldg${a.buildingId})"
+        is Action.Drink     -> "Drink(bldg${a.buildingId})"
         is Action.Sleep     -> "Sleep(bldg${a.buildingId})"
-        is Action.MoveTo    -> "Walk→(${a.target.x},${a.target.y})"
+        is Action.Shop      -> "Shop(bldg${a.buildingId})"
+        is Action.Heal      -> "Heal(bldg${a.buildingId})"
+        is Action.Learn     -> "Learn(bldg${a.buildingId})"
+        is Action.Exercise  -> "Exercise(bldg${a.buildingId})"
+        is Action.Relax     -> "Relax(bldg${a.buildingId})"
+        is Action.Watch     -> "Watch(bldg${a.buildingId})"
+        is Action.MoveTo    -> "Walk->(${a.target.x},${a.target.y})"
         is Action.Socialize -> "Socialize(p${a.targetPeepId})"
         Action.Idle         -> "Idle"
     }

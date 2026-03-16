@@ -14,7 +14,7 @@ data class Peep(
     var position: CellCoord,
     var homeId: BuildingId? = null,
     val relationships: MutableMap<PeepId, String> = mutableMapOf(),
-    val needs: Needs = Needs(),
+    val needs: MaslowNeeds = MaslowNeeds(),
     var money: Float = 100f,
     var jobId: BuildingId? = null,
     var brain: Brain = IdleBrain(),

@@ -41,12 +41,15 @@ class SimBroadcaster(private val json: Json) {
 
     suspend fun broadcastPeepUpdate(engine: TickEngine) {
         val positions = engine.peeps.values.map { peep ->
+            val top = peep.needs.topNeed()
             PeepPosition(
                 id = peep.id,
                 x = peep.position.x,
                 y = peep.position.y,
                 hunger = peep.needs.hunger,
-                fatigue = peep.needs.fatigue
+                fatigue = peep.needs.sleep,
+                topNeed = top?.first?.name,
+                topNeedValue = top?.second ?: 0f
             )
         }
         val message = json.encodeToString(

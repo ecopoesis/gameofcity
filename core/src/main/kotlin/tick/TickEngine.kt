@@ -48,10 +48,122 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
         }
 
         // Phase 5: Maintain
-        val rentDay = tick > 0L && tick % 1440L == 0L
+        maintain()
+
+        tick++
+    }
+
+    private fun execute(peep: Peep, action: Action) {
+        val n = peep.needs
+        when (action) {
+            is Action.MoveTo -> {
+                if (map.isPassable(action.target)) {
+                    map.peepsAt.getOrPut(peep.position) { mutableListOf() }.remove(peep.id)
+                    peep.position = action.target
+                    map.peepsAt.getOrPut(action.target) { mutableListOf() }.add(peep.id)
+                }
+            }
+            is Action.Eat -> {
+                n.hunger = (n.hunger - 0.5f).coerceAtLeast(0f)
+                n.thirst = (n.thirst - 0.2f).coerceAtLeast(0f)
+                peep.money -= 5f
+            }
+            is Action.Drink -> {
+                n.thirst = (n.thirst - 0.5f).coerceAtLeast(0f)
+                n.friendship = (n.friendship - 0.1f).coerceAtLeast(0f)
+                peep.money -= 3f
+            }
+            is Action.Sleep -> {
+                n.sleep = (n.sleep - 0.5f).coerceAtLeast(0f)
+                n.warmth = (n.warmth - 0.3f).coerceAtLeast(0f)
+                n.shelter = (n.shelter - 0.2f).coerceAtLeast(0f)
+            }
+            is Action.Work -> {
+                n.recognition = (n.recognition - 0.1f).coerceAtLeast(0f)
+                peep.money += 1f
+            }
+            is Action.Socialize -> {
+                n.friendship = (n.friendship - 0.3f).coerceAtLeast(0f)
+                n.community = (n.community - 0.1f).coerceAtLeast(0f)
+                val other = peeps[action.targetPeepId]
+                if (other != null) {
+                    peep.friendships[other.id]  = (peep.friendships[other.id]  ?: 0f) + 0.05f
+                    other.friendships[peep.id]  = (other.friendships[peep.id]  ?: 0f) + 0.05f
+                }
+            }
+            is Action.Shop -> {
+                n.accomplishment = (n.accomplishment - 0.2f).coerceAtLeast(0f)
+                n.status = (n.status - 0.1f).coerceAtLeast(0f)
+                peep.money -= 10f
+            }
+            is Action.Heal -> {
+                n.health = (n.health - 0.5f).coerceAtLeast(0f)
+                peep.money -= 20f
+            }
+            is Action.Learn -> {
+                n.learning = (n.learning - 0.3f).coerceAtLeast(0f)
+                n.creativity = (n.creativity - 0.1f).coerceAtLeast(0f)
+            }
+            is Action.Exercise -> {
+                n.health = (n.health - 0.2f).coerceAtLeast(0f)
+                n.accomplishment = (n.accomplishment - 0.15f).coerceAtLeast(0f)
+            }
+            is Action.Relax -> {
+                n.creativity = (n.creativity - 0.2f).coerceAtLeast(0f)
+                n.community = (n.community - 0.15f).coerceAtLeast(0f)
+                n.friendship = (n.friendship - 0.1f).coerceAtLeast(0f)
+            }
+            is Action.Watch -> {
+                n.creativity = (n.creativity - 0.15f).coerceAtLeast(0f)
+                n.community = (n.community - 0.2f).coerceAtLeast(0f)
+                peep.money -= 8f
+            }
+            is Action.Idle -> Unit
+        }
+    }
+
+    private fun maintain() {
+        val rentDay = tick > 0L && tick % TICKS_PER_DAY == 0L
         peeps.values.forEach { peep ->
-            peep.needs.hunger  = (peep.needs.hunger  + 0.001f).coerceIn(0f, 1f)
-            peep.needs.fatigue = (peep.needs.fatigue + 0.0005f).coerceIn(0f, 1f)
+            val n = peep.needs
+            // Level 1 - Physiological (fast decay)
+            n.hunger  = (n.hunger  + 0.001f).coerceIn(0f, 1f)
+            n.thirst  = (n.thirst  + 0.0012f).coerceIn(0f, 1f)
+            n.sleep   = (n.sleep   + 0.0005f).coerceIn(0f, 1f)
+            n.warmth  = (n.warmth  + 0.0002f).coerceIn(0f, 1f)
+
+            // Level 2 - Safety (moderate decay)
+            if (peep.homeId == null) {
+                n.shelter = (n.shelter + 0.0003f).coerceIn(0f, 1f)
+            }
+            n.health = (n.health + 0.0001f).coerceIn(0f, 1f)
+            // financial: derived from money
+            n.financial = when {
+                peep.money >= 200f -> 0f
+                peep.money <= 0f -> 1f
+                else -> 1f - (peep.money / 200f)
+            }
+
+            // Level 3 - Love/Belonging (slow decay)
+            n.friendship = (n.friendship + 0.0004f).coerceIn(0f, 1f)
+            n.family     = (n.family     + 0.0002f).coerceIn(0f, 1f)
+            n.community  = (n.community  + 0.0003f).coerceIn(0f, 1f)
+
+            // Level 4 - Esteem (very slow decay)
+            n.recognition    = (n.recognition    + 0.0002f).coerceIn(0f, 1f)
+            n.accomplishment = (n.accomplishment + 0.0001f).coerceIn(0f, 1f)
+            // status: derived from money + home + job
+            val moneyScore = (peep.money / 500f).coerceIn(0f, 1f)
+            val homeScore = if (peep.homeId != null) 0.3f else 0f
+            val jobScore = if (peep.jobId != null) 0.3f else 0f
+            n.status = (1f - (moneyScore + homeScore + jobScore).coerceIn(0f, 1f))
+
+            // Level 5 - Self-Actualization (glacial decay)
+            n.creativity = (n.creativity + 0.00005f).coerceIn(0f, 1f)
+            n.learning   = (n.learning   + 0.00008f).coerceIn(0f, 1f)
+            n.purpose    = (n.purpose    + 0.00005f).coerceIn(0f, 1f)
+
+            // Rent
             if (rentDay && peep.homeId != null) {
                 peep.money -= 20f
                 if (peep.money < 0f) peep.homeId = null  // evicted
@@ -71,38 +183,10 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 }
             }
         }
-
-        tick++
-    }
-
-    private fun execute(peep: Peep, action: Action) {
-        when (action) {
-            is Action.MoveTo -> {
-                if (map.isPassable(action.target)) {
-                    map.peepsAt.getOrPut(peep.position) { mutableListOf() }.remove(peep.id)
-                    peep.position = action.target
-                    map.peepsAt.getOrPut(action.target) { mutableListOf() }.add(peep.id)
-                }
-            }
-            is Action.Eat -> {
-                peep.needs.hunger = (peep.needs.hunger - 0.5f).coerceAtLeast(0f)
-                peep.money -= 5f
-            }
-            is Action.Sleep -> peep.needs.fatigue = (peep.needs.fatigue - 0.5f).coerceAtLeast(0f)
-            is Action.Work -> peep.money += 1f
-            is Action.Socialize -> {
-                peep.needs.social = (peep.needs.social - 0.3f).coerceAtLeast(0f)
-                val other = peeps[action.targetPeepId]
-                if (other != null) {
-                    peep.friendships[other.id]  = (peep.friendships[other.id]  ?: 0f) + 0.05f
-                    other.friendships[peep.id]  = (other.friendships[peep.id]  ?: 0f) + 0.05f
-                }
-            }
-            is Action.Idle -> Unit
-        }
     }
 
     companion object {
         private const val PARALLEL_THRESHOLD = 100
+        const val TICKS_PER_DAY = 1440
     }
 }

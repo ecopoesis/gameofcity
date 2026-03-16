@@ -18,16 +18,44 @@
             padding: 10px 14px;
             border-radius: 8px;
             line-height: 1.6;
-            pointer-events: none;
-            min-width: 160px;
+            pointer-events: auto;
+            min-width: 180px;
         }
         #hud .label { color: #a6adc8; }
         #hud .paused { color: #f9e2af; font-weight: bold; }
+        #hud select, #hud input[type=range] {
+            background: #313244;
+            color: #cdd6f4;
+            border: 1px solid #45475a;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 12px;
+        }
+        #hud select { cursor: pointer; }
+        #hud .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        #hud .control-row .label { min-width: 50px; }
+        #hud button {
+            background: #45475a;
+            color: #cdd6f4;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+        #hud button:hover { background: #585b70; }
         #inspector {
             position: absolute;
             top: 12px;
             right: 12px;
-            width: 260px;
+            width: 280px;
             background: rgba(30, 30, 46, 0.92);
             color: #cdd6f4;
             border-radius: 8px;
@@ -56,6 +84,14 @@
             height: 100%;
             border-radius: 3px;
             transition: width 0.3s;
+        }
+        #inspector .level-header {
+            color: #a6adc8;
+            font-weight: bold;
+            margin-top: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         #status {
             position: absolute;
@@ -88,6 +124,33 @@
         <div><span class="label">Peeps:</span> <span id="peepCount">0</span></div>
         <div><span class="label">Speed:</span> <span id="speed">1x</span></div>
         <div id="pausedLabel" class="paused" style="display:none">PAUSED</div>
+        <div class="control-row">
+            <span class="label">Brain:</span>
+            <select id="brainSelect">
+                <option value="Utility">Utility</option>
+                <option value="Pyramid">Pyramid</option>
+                <option value="Wave">Wave</option>
+                <option value="Random">Random</option>
+            </select>
+        </div>
+        <hr style="border-color:#45475a;margin:8px 0">
+        <div style="font-size:11px;color:#a6adc8;margin-bottom:4px">Generation</div>
+        <div class="control-row">
+            <span class="label">Size:</span>
+            <input type="range" id="genSize" min="20" max="100" value="40" style="width:80px">
+            <span id="genSizeLabel">40</span>
+        </div>
+        <div class="control-row">
+            <span class="label">Peeps:</span>
+            <input type="range" id="genPeeps" min="10" max="200" value="50" style="width:80px">
+            <span id="genPeepsLabel">50</span>
+        </div>
+        <div class="control-row">
+            <span class="label">Organic:</span>
+            <input type="range" id="genOrganic" min="0" max="100" value="0" style="width:80px">
+            <span id="genOrganicLabel">0%</span>
+        </div>
+        <button id="generateBtn">Generate City</button>
     </div>
     <div id="inspector" style="display:none">
         <div id="inspector-title">Inspector</div>

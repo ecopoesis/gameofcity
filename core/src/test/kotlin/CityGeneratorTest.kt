@@ -46,14 +46,12 @@ class CityGeneratorTest : StringSpec({
     }
 
     "different seeds produce different maps" {
-        val map1 = CityGenerator.generate(CityGenConfig(width = 20, height = 20, seed = 10L))
-        val map2 = CityGenerator.generate(CityGenConfig(width = 20, height = 20, seed = 99L))
-        val diffs = (0 until 20).sumOf { x ->
-            (0 until 20).count { y ->
-                map1.getCell(CellCoord(x, y))!!.terrain != map2.getCell(CellCoord(x, y))!!.terrain
-            }
-        }
-        diffs shouldBeGreaterThan 0
+        val map1 = CityGenerator.generate(CityGenConfig(width = 30, height = 30, seed = 10L))
+        val map2 = CityGenerator.generate(CityGenConfig(width = 30, height = 30, seed = 99L))
+        // Buildings should differ in type or subtype distribution
+        val types1 = map1.buildings.values.map { it.subtype ?: it.type }.groupingBy { it }.eachCount()
+        val types2 = map2.buildings.values.map { it.subtype ?: it.type }.groupingBy { it }.eachCount()
+        types1 shouldNot be(types2)
     }
 
     "all road cells are passable" {

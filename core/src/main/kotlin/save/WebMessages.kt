@@ -8,7 +8,9 @@ data class PeepPosition(
     val x: Int,
     val y: Int,
     val hunger: Float,
-    val fatigue: Float
+    val fatigue: Float,
+    val topNeed: String? = null,
+    val topNeedValue: Float = 0f
 )
 
 @Serializable
@@ -28,5 +30,6 @@ data class SnapshotMessage(
 data class CommandMessage(
     val type: String = "command",
     val action: String,
-    val value: Int? = null
+    val value: Int? = null,
+    val stringValue: String? = null
 )
