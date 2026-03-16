@@ -74,14 +74,14 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | WaveBrain | #16 | ✅ Done |
 | Brain Type + Renderers | #17 | ✅ Done |
 | City Generation Improvements | #18 | ✅ Done |
-| Day/Night Cycle + Schedules | #19 | Open |
-| Building Capacity + Queuing | #20 | Open |
-| Labor Market + Wages | #21 | Open |
-| Housing Market + Homelessness | #22 | Open |
-| Relationships + Households | #23 | Open |
-| Life Events + Demographics | #24 | Open |
-| Emergent Events + Stats Dashboard | #26 | Open |
-| Environment + City Services | #27 | Open |
+| Day/Night Cycle + Schedules | #19 | ✅ Done |
+| Building Capacity + Queuing | #20 | ✅ Done |
+| Labor Market + Wages | #21 | ✅ Done |
+| Housing Market + Homelessness | #22 | ✅ Done |
+| Relationships + Households | #23 | ✅ Done |
+| Life Events + Demographics | #24 | ✅ Done |
+| Emergent Events + Stats Dashboard | #26 | ✅ Done |
+| Environment + City Services | #27 | ✅ Done |
 
 ## Key Files
 
@@ -97,7 +97,14 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | `core/src/main/kotlin/peep/WaveBrain.kt` | Kenrick's overlapping waves brain |
 | `core/src/main/kotlin/peep/NeedActionMapper.kt` | Maps NeedType → BuildingSubtype → Action |
 | `core/src/main/kotlin/peep/NavigationHelper.kt` | Shared pathfinding queue for brains |
+| `core/src/main/kotlin/peep/Schedule.kt` | Schedule types + templates (Worker/Student/Retiree/Nightshift) |
+| `core/src/main/kotlin/peep/Demographics.kt` | Mortality, birth, immigration/emigration logic |
+| `core/src/main/kotlin/peep/Household.kt` | Household model + `RelationshipTier` enum |
 | `core/src/main/kotlin/tick/TickEngine.kt` | 5-phase simulation pipeline |
+| `core/src/main/kotlin/tick/SimClock.kt` | Centralized simulation clock (hour/minute/day) |
+| `core/src/main/kotlin/tick/EventLog.kt` | Ring-buffered event log (evictions, births, deaths, etc.) |
+| `core/src/main/kotlin/tick/CityStats.kt` | Aggregate city statistics (employment, happiness, Gini) |
+| `core/src/main/kotlin/world/Weather.kt` | Weather state machine (Clear/Rain/Snow/Heatwave) |
 | `core/src/main/kotlin/pathfind/AStarPathfinder.kt` | Grid pathfinding |
 | `core/src/main/kotlin/gen/CityGenerator.kt` | Procedural city gen (grid + organic roads) |
 | `desktop/src/main/kotlin/GameOfCityApp.kt` | Main game loop, camera pan |
