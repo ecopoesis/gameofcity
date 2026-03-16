@@ -4,7 +4,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import peep.Action
+import peep.Household
 import peep.Peep
+import peep.RelationshipTier
 import peep.WorldView
 import world.CellCoord
 import world.WorldMap
@@ -15,6 +17,8 @@ import kotlin.coroutines.CoroutineContext
 class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContext = Dispatchers.Default) {
 
     val peeps: MutableMap<Int, Peep> = mutableMapOf()
+    val households: MutableMap<Int, Household> = mutableMapOf()
+    private var nextHouseholdId: Int = 0
     var tick: Long = 0L
     val clock: SimClock = SimClock()
 
@@ -129,6 +133,8 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 if (other != null) {
                     peep.friendships[other.id]  = (peep.friendships[other.id]  ?: 0f) + 0.05f
                     other.friendships[peep.id]  = (other.friendships[peep.id]  ?: 0f) + 0.05f
+                    peep.interactionCount[other.id] = (peep.interactionCount[other.id] ?: 0) + 1
+                    other.interactionCount[peep.id] = (other.interactionCount[peep.id] ?: 0) + 1
                 }
             }
             is Action.Shop -> {
@@ -339,7 +345,114 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                     val b = peeps[ids[j]] ?: continue
                     a.friendships[b.id] = (a.friendships[b.id] ?: 0f) + 0.0001f
                     b.friendships[a.id] = (b.friendships[a.id] ?: 0f) + 0.0001f
+                    a.interactionCount[b.id] = (a.interactionCount[b.id] ?: 0) + 1
+                    b.interactionCount[a.id] = (b.interactionCount[a.id] ?: 0) + 1
                 }
+            }
+        }
+
+        // Daily: friendship decay + romance checks
+        if (isNewDay) {
+            // Friendship decay based on tier
+            peeps.values.forEach { peep ->
+                val toRemove = mutableListOf<Int>()
+                peep.friendships.forEach { (otherId, value) ->
+                    val tier = RelationshipTier.fromFriendship(value)
+                    val newVal = (value - tier.decayPerDay).coerceAtLeast(0f)
+                    if (newVal <= 0.01f && tier == RelationshipTier.Acquaintance) {
+                        toRemove.add(otherId)
+                    } else {
+                        peep.friendships[otherId] = newVal
+                    }
+                }
+                toRemove.forEach { peep.friendships.remove(it) }
+            }
+
+            // Romance: unpartnered peeps with close friends may become partners
+            peeps.values.filter { !it.isPartnered }.forEach { peep ->
+                val candidate = peep.friendships.entries
+                    .filter { (otherId, value) ->
+                        value > 0.6f &&
+                        (peep.interactionCount[otherId] ?: 0) >= 5 &&
+                        peeps[otherId]?.isPartnered != true
+                    }
+                    .maxByOrNull { it.value }
+
+                if (candidate != null && (tick + peep.id.toLong()) % 20 == 0L) { // ~5% daily
+                    val other = peeps[candidate.key] ?: return@forEach
+                    // Form partnership
+                    peep.partnerId = other.id
+                    other.partnerId = peep.id
+                    peep.friendships[other.id] = 0.85f
+                    other.friendships[peep.id] = 0.85f
+
+                    // Form household — move into better home
+                    val hId = nextHouseholdId++
+                    val household = Household(hId)
+                    household.addMember(peep.id)
+                    household.addMember(other.id)
+                    household.sharedMoney = peep.money + other.money
+                    peep.money = 0f
+                    other.money = 0f
+
+                    // Pick better home
+                    val homeA = peep.homeId?.let { map.buildings[it] }
+                    val homeB = other.homeId?.let { map.buildings[it] }
+                    val bestHome = when {
+                        homeA == null && homeB == null -> null
+                        homeA == null -> homeB
+                        homeB == null -> homeA
+                        (homeA.subtype?.homeQuality ?: 0) >= (homeB.subtype?.homeQuality ?: 0) -> homeA
+                        else -> homeB
+                    }
+                    household.homeId = bestHome?.id
+                    peep.homeId = bestHome?.id
+                    other.homeId = bestHome?.id
+                    peep.householdId = hId
+                    other.householdId = hId
+                    households[hId] = household
+                }
+            }
+
+            // Partnership dissolution: friendship drops below 0.5
+            peeps.values.filter { it.isPartnered }.forEach { peep ->
+                val partnerId = peep.partnerId ?: return@forEach
+                val friendship = peep.friendships[partnerId] ?: 0f
+                if (friendship < 0.5f) {
+                    val partner = peeps[partnerId]
+                    // Dissolve household
+                    val hId = peep.householdId
+                    if (hId != null) {
+                        val household = households[hId]
+                        if (household != null) {
+                            val splitMoney = household.sharedMoney / 2
+                            peep.money += splitMoney
+                            partner?.let { it.money += splitMoney }
+                            households.remove(hId)
+                        }
+                    }
+                    peep.partnerId = null
+                    peep.householdId = null
+                    partner?.partnerId = null
+                    partner?.householdId = null
+                    // One partner keeps home, other loses it
+                    partner?.homeId = null
+                }
+            }
+
+            // Pool household income
+            households.values.forEach { household ->
+                household.members.forEach { memberId ->
+                    val peep = peeps[memberId] ?: return@forEach
+                    household.sharedMoney += peep.money
+                    peep.money = 0f
+                }
+                // Distribute allowance equally
+                val allowance = household.sharedMoney / household.size
+                household.members.forEach { memberId ->
+                    peeps[memberId]?.money = allowance
+                }
+                household.sharedMoney = allowance * household.size
             }
         }
     }
