@@ -57,6 +57,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 - **Do not open PRs** unless explicitly asked — commit directly to `main`
 - New work identified during implementation should be filed as a new issue, not done silently
 - When planning together, always create GitHub issues for each step of the plan before starting implementation
+- Web UI and desktop UI must stay in parity — any control, inspector feature, or keyboard shortcut added to one must be added to the other
 
 ## Roadmap (GitHub Issues)
 
