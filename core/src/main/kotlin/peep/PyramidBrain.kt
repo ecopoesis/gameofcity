@@ -11,7 +11,29 @@ class PyramidBrain : Brain {
 
     private fun chooseGoal(peep: Peep, world: WorldView): Action {
         val pf = nav.pathfinder(world.map)
+        val sched = ScheduleTemplate.forType(peep.schedule)
+        val hour = world.clock.hour
 
+        // Schedule overrides (unless critical need)
+        val maxNeed = peep.needs.topNeed()?.second ?: 0f
+
+        // Sleep time with no critical needs -> go home
+        if (sched.isSleepTime(hour) && maxNeed < 0.7f && peep.homeId != null) {
+            val home = world.map.buildings[peep.homeId!!]
+            if (home != null) {
+                return nav.navigateTo(peep.position, home.cells.first(), pf, Action.Sleep(home.id))
+            }
+        }
+
+        // Work time with no critical needs -> go to job
+        if (sched.isWorkTime(hour) && maxNeed < 0.5f && peep.jobId != null) {
+            val job = world.map.buildings[peep.jobId!!]
+            if (job != null) {
+                return nav.navigateTo(peep.position, job.cells.first(), pf, Action.Work(job.id))
+            }
+        }
+
+        // Strict Maslow hierarchy
         for (level in MaslowLevel.entries) {
             val urgentNeeds = peep.needs.allAtLevel(level)
                 .filter { it.second > THRESHOLD }
@@ -25,17 +47,14 @@ class PyramidBrain : Brain {
                         pf, candidate.action
                     )
                 }
-                // Can't satisfy most urgent need at this level — idle (don't skip up)
                 return Action.Idle
             }
-            // All needs at this level below threshold — proceed to next level
         }
 
         return defaultBehavior(peep, world, pf)
     }
 
     private fun defaultBehavior(peep: Peep, world: WorldView, pf: pathfind.AStarPathfinder): Action {
-        // All satisfied -> go home or wander
         if (peep.homeId != null) {
             val home = world.map.buildings[peep.homeId!!]
             if (home != null) {

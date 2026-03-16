@@ -5,15 +5,13 @@ import world.BuildingType
 
 object SimLogger {
 
-    private const val TICKS_PER_DAY = 1440
     private const val SAMPLE_PEEPS = 10
 
     fun log(engine: TickEngine) {
         val tick = engine.tick
-        val timeInDay = tick % TICKS_PER_DAY
-        val day = tick / TICKS_PER_DAY + 1
-        val h = timeInDay / 60
-        val m = timeInDay % 60
+        val day = engine.clock.day
+        val h = engine.clock.hour
+        val m = engine.clock.minute
 
         val peeps = engine.peeps.values.toList()
         val map = engine.map

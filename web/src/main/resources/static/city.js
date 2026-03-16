@@ -124,6 +124,7 @@ let ws = null;
 
 // --- HUD ---
 const hudEl = document.getElementById('hud');
+const clockEl = document.getElementById('clock');
 const tickEl = document.getElementById('tick');
 const peepCountEl = document.getElementById('peepCount');
 const speedEl = document.getElementById('speed');
@@ -138,12 +139,38 @@ const genOrganicSlider = document.getElementById('genOrganic');
 const genOrganicLabel = document.getElementById('genOrganicLabel');
 const generateBtn = document.getElementById('generateBtn');
 
-function updateHUD(tick, peepCount) {
+function updateHUD(tick, peepCount, hour, minute, day) {
+    if (hour !== undefined && minute !== undefined && day !== undefined) {
+        const hh = String(hour).padStart(2, '0');
+        const mm = String(minute).padStart(2, '0');
+        clockEl.textContent = `Day ${day}  ${hh}:${mm}`;
+        updateSkyColor(hour);
+    }
     tickEl.textContent = tick;
     peepCountEl.textContent = peepCount;
     const speedFactor = Math.round(50 / tickDelayMs * 10) / 10;
     speedEl.textContent = speedFactor + 'x';
     pausedLabel.style.display = paused ? 'block' : 'none';
+}
+
+function updateSkyColor(hour) {
+    let r, g, b;
+    if (hour >= 7 && hour <= 17) {
+        // Day: light blue-gray
+        r = 0.45; g = 0.52; b = 0.65;
+    } else if (hour >= 18 && hour <= 20) {
+        // Dusk: warm orange fading to dark
+        const t = (hour - 17) / 3;
+        r = 0.45 - t * 0.30; g = 0.52 - t * 0.38; b = 0.65 - t * 0.47;
+    } else if (hour >= 5 && hour <= 6) {
+        // Dawn: dark to warm
+        const t = (hour - 4) / 2;
+        r = 0.12 + t * 0.33; g = 0.12 + t * 0.40; b = 0.18 + t * 0.47;
+    } else {
+        // Night: dark blue
+        r = 0.06; g = 0.06; b = 0.12;
+    }
+    scene.background.setRGB(r, g, b);
 }
 
 // Slider labels
@@ -557,7 +584,8 @@ function connect() {
                 topNeedValue: p.maslowNeeds ? getTopNeedValue(p.maslowNeeds) : 0
             }));
             lastPeepTime = performance.now();
-            updateHUD(msg.data.tick, msg.data.peeps.length);
+            const cd = msg.data.clock;
+            updateHUD(msg.data.tick, msg.data.peeps.length, cd ? cd.hour : undefined, cd ? cd.minute : undefined, cd ? cd.day : undefined);
             refreshInspector();
         }
 
@@ -565,7 +593,7 @@ function connect() {
             prevPeepData = peepData;
             peepData = msg.peeps;
             lastPeepTime = performance.now();
-            updateHUD(msg.tick, msg.peeps.length);
+            updateHUD(msg.tick, msg.peeps.length, msg.hour, msg.minute, msg.day);
             if (selectedPeepId != null) {
                 const p = peepData.find(pp => pp.id === selectedPeepId);
                 if (p) updateSelectionRing(p.x, p.y);

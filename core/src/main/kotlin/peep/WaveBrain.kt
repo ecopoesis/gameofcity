@@ -14,13 +14,48 @@ class WaveBrain : Brain {
 
     private fun chooseGoal(peep: Peep, world: WorldView): Action {
         val pf = nav.pathfinder(world.map)
+        val sched = ScheduleTemplate.forType(peep.schedule)
+        val hour = world.clock.hour
         val candidates = mutableListOf<ScoredAction>()
 
+        // Schedule-based bonus scores injected as candidates
+        if (sched.isSleepTime(hour) && peep.homeId != null) {
+            val home = world.map.buildings[peep.homeId!!]
+            if (home != null) {
+                val sleepScore = 6.0f + peep.needs.sleep * 4.0f  // strong pull at night
+                candidates.add(ScoredAction(
+                    ActionCandidate(home, Action.Sleep(home.id), listOf(NeedType.Sleep)),
+                    sleepScore
+                ))
+            }
+        }
+
+        if (sched.isWorkTime(hour) && peep.jobId != null) {
+            val job = world.map.buildings[peep.jobId!!]
+            if (job != null) {
+                val workScore = 3.0f + peep.needs.financial * 2.0f
+                candidates.add(ScoredAction(
+                    ActionCandidate(job, Action.Work(job.id), listOf(NeedType.Financial)),
+                    workScore
+                ))
+            }
+        }
+
+        // Mealtime hunger boost
+        if (sched.isMealTime(hour)) {
+            val hungerBoost = 2.0f
+            val candidate = NeedActionMapper.findAction(NeedType.Hunger, peep, world.map)
+            if (candidate != null) {
+                candidates.add(ScoredAction(candidate, hungerBoost + peep.needs.hunger * 8.0f))
+            }
+        }
+
+        // Standard need-based scoring
         for (level in MaslowLevel.entries) {
             val weight = LEVEL_WEIGHTS[level.index - 1]
             for ((needType, value) in peep.needs.allAtLevel(level)) {
                 if (value < 0.1f) continue
-                val score = weight * value * value  // quadratic urgency
+                val score = weight * value * value
                 val candidate = NeedActionMapper.findAction(needType, peep, world.map)
                 if (candidate != null) {
                     candidates.add(ScoredAction(candidate, score))
@@ -32,7 +67,6 @@ class WaveBrain : Brain {
             return defaultBehavior(peep, world, pf)
         }
 
-        // Weighted random from top-3 for behavioral variety
         val top3 = candidates.sortedByDescending { it.score }.take(3)
         val chosen = weightedRandomSelect(top3)
         return nav.navigateTo(

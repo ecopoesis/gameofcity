@@ -187,6 +187,20 @@ class CityRenderer(
         }
 
     fun render() {
+        // Day/night ambient lighting based on SimClock
+        val hour = engine.clock.hour
+        val ambientLevel = when {
+            hour in 7..17  -> 0.45f                            // day
+            hour in 18..20 -> 0.45f - (hour - 17) * 0.06f     // dusk
+            hour in 5..6   -> 0.15f + (hour - 4) * 0.10f      // dawn
+            else           -> 0.12f                            // night
+        }
+        val warmth = if (hour in 6..18) 0f else 0.08f  // blue tint at night
+        environment.set(ColorAttribute(
+            ColorAttribute.AmbientLight,
+            ambientLevel - warmth, ambientLevel - warmth, ambientLevel + warmth, 1f
+        ))
+
         modelBatch.begin(controller.camera)
         terrainInstances.forEach  { modelBatch.render(it, environment) }
         buildingInstances.forEach { modelBatch.render(it, environment) }

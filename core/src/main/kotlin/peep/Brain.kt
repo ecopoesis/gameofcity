@@ -1,11 +1,13 @@
 package peep
 
+import tick.SimClock
 import world.WorldMap
 
 interface WorldView {
     val map: WorldMap
     val peeps: Map<Int, Peep>
     val tick: Long
+    val clock: SimClock
 }
 
 interface Brain {

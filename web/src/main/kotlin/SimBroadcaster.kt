@@ -54,7 +54,13 @@ class SimBroadcaster(private val json: Json) {
         }
         val message = json.encodeToString(
             PeepUpdateMessage.serializer(),
-            PeepUpdateMessage(tick = engine.tick, peeps = positions)
+            PeepUpdateMessage(
+                tick = engine.tick,
+                hour = engine.clock.hour,
+                minute = engine.clock.minute,
+                day = engine.clock.day,
+                peeps = positions
+            )
         )
         broadcast(message)
     }

@@ -3,9 +3,17 @@ package save
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class ClockData(
+    val day: Int = 1,
+    val hour: Int = 6,
+    val minute: Int = 0
+)
+
+@Serializable
 data class SaveData(
-    val version: Int = 2,
+    val version: Int = 3,
     val tick: Long,
+    val clock: ClockData? = null,
     val map: MapData,
     val peeps: List<PeepData>
 )
@@ -77,6 +85,7 @@ data class PeepData(
     // v2 Maslow needs
     val maslowNeeds: MaslowNeedsData? = null,
     val brainType: String,
+    val schedule: String = "Worker",
     val friendships: Map<Int, Float> = emptyMap(),
     val relationships: Map<Int, String> = emptyMap()
 )

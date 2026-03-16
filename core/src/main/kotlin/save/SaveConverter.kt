@@ -63,12 +63,19 @@ object SaveConverter {
                     purpose = n.purpose
                 ),
                 brainType = brainTypeName(p.brain),
+                schedule = p.schedule.name,
                 friendships = p.friendships.toMap(),
                 relationships = p.relationships.toMap()
             )
         }
 
-        return SaveData(tick = engine.tick, map = MapData(map.width, map.height, cells, buildings), peeps = peeps)
+        val clockData = ClockData(
+            day = engine.clock.day,
+            hour = engine.clock.hour,
+            minute = engine.clock.minute
+        )
+
+        return SaveData(tick = engine.tick, clock = clockData, map = MapData(map.width, map.height, cells, buildings), peeps = peeps)
     }
 
     fun fromSaveData(data: SaveData): TickEngine {
@@ -96,6 +103,9 @@ object SaveConverter {
 
         val engine = TickEngine(map)
         engine.tick = data.tick
+        if (data.clock != null) {
+            engine.clock.restore(data.tick, data.clock.day, data.clock.hour, data.clock.minute)
+        }
 
         for (pd in data.peeps) {
             val needs = if (pd.maslowNeeds != null) {
@@ -128,6 +138,7 @@ object SaveConverter {
                 )
             }
 
+            val schedule = try { ScheduleType.valueOf(pd.schedule) } catch (_: Exception) { ScheduleType.Worker }
             val peep = Peep(
                 id = pd.id,
                 name = pd.name,
@@ -140,7 +151,8 @@ object SaveConverter {
                 needs = needs,
                 brain = brainFromName(pd.brainType),
                 friendships = pd.friendships.toMutableMap(),
-                relationships = pd.relationships.toMutableMap()
+                relationships = pd.relationships.toMutableMap(),
+                schedule = schedule
             )
             engine.addPeep(peep)
         }

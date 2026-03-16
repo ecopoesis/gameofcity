@@ -19,5 +19,6 @@ data class Peep(
     var jobId: BuildingId? = null,
     var brain: Brain = IdleBrain(),
     var lastAction: Action = Action.Idle,
-    val friendships: MutableMap<PeepId, Float> = mutableMapOf()
+    val friendships: MutableMap<PeepId, Float> = mutableMapOf(),
+    var schedule: ScheduleType = ScheduleType.Worker
 )

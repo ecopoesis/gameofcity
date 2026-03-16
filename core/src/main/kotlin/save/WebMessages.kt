@@ -17,6 +17,9 @@ data class PeepPosition(
 data class PeepUpdateMessage(
     val type: String = "peeps",
     val tick: Long,
+    val hour: Int = 0,
+    val minute: Int = 0,
+    val day: Int = 1,
     val peeps: List<PeepPosition>
 )
 

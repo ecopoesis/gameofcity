@@ -14,11 +14,13 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
 
     val peeps: MutableMap<Int, Peep> = mutableMapOf()
     var tick: Long = 0L
+    val clock: SimClock = SimClock()
 
     private val worldView = object : WorldView {
         override val map: WorldMap get() = this@TickEngine.map
         override val peeps: Map<Int, Peep> get() = this@TickEngine.peeps
         override val tick: Long get() = this@TickEngine.tick
+        override val clock: SimClock get() = this@TickEngine.clock
     }
 
     fun addPeep(peep: Peep) {
@@ -50,6 +52,7 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
         // Phase 5: Maintain
         maintain()
 
+        clock.advance()
         tick++
     }
 
@@ -123,7 +126,7 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
     }
 
     private fun maintain() {
-        val rentDay = tick > 0L && tick % TICKS_PER_DAY == 0L
+        val isNewDay = clock.isNewDay()
         peeps.values.forEach { peep ->
             val n = peep.needs
             // Level 1 - Physiological (fast decay)
@@ -163,8 +166,8 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             n.learning   = (n.learning   + 0.00008f).coerceIn(0f, 1f)
             n.purpose    = (n.purpose    + 0.00005f).coerceIn(0f, 1f)
 
-            // Rent
-            if (rentDay && peep.homeId != null) {
+            // Rent (daily)
+            if (isNewDay && peep.homeId != null) {
                 peep.money -= 20f
                 if (peep.money < 0f) peep.homeId = null  // evicted
             }
