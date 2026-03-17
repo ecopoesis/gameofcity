@@ -48,6 +48,9 @@ class WorldMap(val width: Int, val height: Int) {
     // Building index
     val buildings: HashMap<BuildingId, Building> = HashMap()
 
+    // Parked vehicle tracking: cell coord -> peep id of owner
+    val parkedVehicles: HashMap<CellCoord, PeepId> = HashMap()
+
     fun getCell(coord: CellCoord): Cell? = when (coord.z) {
         0 -> if (coord.x in 0 until width && coord.y in 0 until height) ground[coord.x][coord.y] else null
         else -> layers[coord]

@@ -148,6 +148,9 @@ object CityGenerator {
             }
         }
 
+        // Place on-street parking alongside Collector/Local roads
+        placeOnStreetParking(map, config, rng)
+
         // Find blocks (empty rectangles between corridors)
         val blocks = findBlocks(map, config)
 
@@ -475,6 +478,35 @@ object CityGenerator {
         return blocks
     }
 
+    // --- On-street parking ---
+
+    private fun placeOnStreetParking(map: WorldMap, config: CityGenConfig, rng: Random) {
+        // Place Parking terrain cells alongside Collector/Local roads, spaced periodically
+        for (x in 0 until config.width) {
+            for (y in 0 until config.height) {
+                val cell = map.getCell(CellCoord(x, y)) ?: continue
+                if (cell.terrain != Terrain.CollectorRoad && cell.terrain != Terrain.LocalRoad) continue
+
+                // Every ~6 cells along a road, check for adjacent sidewalk to convert to parking
+                if ((x + y) % 6 != 0) continue
+                if (rng.nextFloat() > 0.4f) continue // 40% chance
+
+                // Find an adjacent sidewalk cell to convert to parking
+                val candidates = listOf(
+                    CellCoord(x - 1, y), CellCoord(x + 1, y),
+                    CellCoord(x, y - 1), CellCoord(x, y + 1)
+                )
+                val sidewalk = candidates.firstOrNull { c ->
+                    val adj = map.getCell(c)
+                    adj != null && adj.terrain == Terrain.Sidewalk && adj.buildingId == null
+                }
+                if (sidewalk != null) {
+                    map.setCell(Cell(sidewalk, Terrain.Parking))
+                }
+            }
+        }
+    }
+
     // --- Zoning ---
 
     private fun zoneFromNoise(noise: Double, urbanization: Float): BuildingType? {
@@ -490,13 +522,14 @@ object CityGenerator {
 
     private val LARGE_SUBTYPES = setOf(
         BuildingSubtype.Apartment, BuildingSubtype.Office, BuildingSubtype.Factory,
-        BuildingSubtype.Stadium, BuildingSubtype.Luxury, BuildingSubtype.Warehouse
+        BuildingSubtype.Stadium, BuildingSubtype.Luxury, BuildingSubtype.Warehouse,
+        BuildingSubtype.ParkingGarage
     )
     private val MEDIUM_SUBTYPES = setOf(
         BuildingSubtype.House, BuildingSubtype.Restaurant, BuildingSubtype.School,
         BuildingSubtype.Theater, BuildingSubtype.CommunityCenter, BuildingSubtype.Hospital,
         BuildingSubtype.Museum, BuildingSubtype.Gym, BuildingSubtype.PoliceStation,
-        BuildingSubtype.FireStation
+        BuildingSubtype.FireStation, BuildingSubtype.ParkingLot
     )
     private val SMALL_SUBTYPES = setOf(
         BuildingSubtype.Cafe, BuildingSubtype.Shop, BuildingSubtype.Workshop,

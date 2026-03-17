@@ -227,9 +227,12 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             is Action.ParkCar -> {
                 peep.parkingSpot = action.spot
                 peep.travelMode = TravelMode.Walk
+                map.parkedVehicles[action.spot] = peep.id
             }
             is Action.RetrieveCar -> {
                 peep.travelMode = TravelMode.Drive
+                map.parkedVehicles.remove(action.spot)
+                peep.parkingSpot = null
             }
             is Action.Idle -> Unit
         }

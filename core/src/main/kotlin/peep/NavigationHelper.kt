@@ -1,6 +1,7 @@
 package peep
 
 import pathfind.AStarPathfinder
+import world.BuildingSubtype
 import world.CellCoord
 import world.Terrain
 import world.TravelMode
@@ -123,24 +124,50 @@ class NavigationHelper {
         return Action.MoveTo(pathQueue.removeFirst())
     }
 
-    /** Find the nearest Parking terrain cell to the target. */
+    /**
+     * Find the nearest available parking spot to the target.
+     * Checks on-street Parking terrain and ParkingLot/ParkingGarage buildings.
+     * Expands search radius if nothing found nearby.
+     */
     private fun findNearbyParking(target: CellCoord, map: WorldMap): CellCoord? {
         var best: CellCoord? = null
         var bestDist = Int.MAX_VALUE
-        val searchRadius = 15
-        for (dx in -searchRadius..searchRadius) {
-            for (dy in -searchRadius..searchRadius) {
-                val c = CellCoord(target.x + dx, target.y + dy)
-                val cell = map.getCell(c) ?: continue
-                if (cell.terrain == Terrain.Parking) {
-                    val dist = c.distanceTo(target)
-                    if (dist < bestDist) {
-                        bestDist = dist
-                        best = c
+
+        // Search on-street parking cells
+        for (radius in intArrayOf(15, 30)) {
+            for (dx in -radius..radius) {
+                for (dy in -radius..radius) {
+                    val c = CellCoord(target.x + dx, target.y + dy)
+                    val cell = map.getCell(c) ?: continue
+                    if (cell.terrain == Terrain.Parking && c !in map.parkedVehicles) {
+                        val dist = c.distanceTo(target)
+                        if (dist < bestDist) {
+                            bestDist = dist
+                            best = c
+                        }
                     }
                 }
             }
+            if (best != null) return best
         }
+
+        // Check ParkingLot/ParkingGarage buildings near target
+        val parkingBuildings = map.buildings.values.filter {
+            it.subtype == BuildingSubtype.ParkingLot || it.subtype == BuildingSubtype.ParkingGarage
+        }
+        for (bld in parkingBuildings) {
+            val entrance = bld.cells.firstOrNull() ?: continue
+            val dist = entrance.distanceTo(target)
+            if (dist < bestDist && !bld.isFull) {
+                // Find an unoccupied cell in this parking building
+                val freeCell = bld.cells.firstOrNull { it !in map.parkedVehicles }
+                if (freeCell != null) {
+                    bestDist = dist
+                    best = freeCell
+                }
+            }
+        }
+
         return best
     }
 
