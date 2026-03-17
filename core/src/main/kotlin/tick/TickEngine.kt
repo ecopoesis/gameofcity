@@ -15,6 +15,7 @@ import peep.WorldView
 import world.BuildingSubtype
 import world.CellCoord
 import world.Weather
+import world.TravelMode
 import world.WorldMap
 import world.baseWage
 import world.homeQuality
@@ -222,6 +223,13 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                     n.community = (n.community - 0.2f).coerceAtLeast(0f)
                     peep.money -= 8f
                 }
+            }
+            is Action.ParkCar -> {
+                peep.parkingSpot = action.spot
+                peep.travelMode = TravelMode.Walk
+            }
+            is Action.RetrieveCar -> {
+                peep.travelMode = TravelMode.Drive
             }
             is Action.Idle -> Unit
         }

@@ -70,7 +70,12 @@ object SaveConverter {
                 brainType = brainTypeName(p.brain),
                 schedule = p.schedule.name,
                 friendships = p.friendships.toMap(),
-                relationships = p.relationships.toMap()
+                relationships = p.relationships.toMap(),
+                vehicle = p.vehicle?.name,
+                travelMode = p.travelMode.name,
+                parkingSpotX = p.parkingSpot?.x,
+                parkingSpotY = p.parkingSpot?.y,
+                parkingSpotZ = p.parkingSpot?.z
             )
         }
 
@@ -147,6 +152,14 @@ object SaveConverter {
             }
 
             val schedule = try { ScheduleType.valueOf(pd.schedule) } catch (_: Exception) { ScheduleType.Worker }
+            val vehicle = pd.vehicle?.let {
+                try { VehicleType.valueOf(it) } catch (_: Exception) { null }
+            }
+            val travelMode = try { TravelMode.valueOf(pd.travelMode) } catch (_: Exception) { TravelMode.Walk }
+            val parkingSpot = if (pd.parkingSpotX != null && pd.parkingSpotY != null) {
+                CellCoord(pd.parkingSpotX, pd.parkingSpotY, pd.parkingSpotZ ?: 0)
+            } else null
+
             val peep = Peep(
                 id = pd.id,
                 name = pd.name,
@@ -160,7 +173,10 @@ object SaveConverter {
                 brain = brainFromName(pd.brainType),
                 friendships = pd.friendships.toMutableMap(),
                 relationships = pd.relationships.toMutableMap(),
-                schedule = schedule
+                schedule = schedule,
+                vehicle = vehicle,
+                travelMode = travelMode,
+                parkingSpot = parkingSpot
             )
             engine.addPeep(peep)
         }

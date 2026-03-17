@@ -3,6 +3,8 @@ package peep
 import world.BuildingId
 import world.CellCoord
 import world.PeepId
+import world.TravelMode
+import world.VehicleType
 
 enum class Gender { Male, Female, NonBinary }
 
@@ -24,7 +26,10 @@ data class Peep(
     var rentGraceDays: Int = 0,
     var partnerId: PeepId? = null,
     var householdId: Int? = null,
-    var interactionCount: MutableMap<PeepId, Int> = mutableMapOf()
+    var interactionCount: MutableMap<PeepId, Int> = mutableMapOf(),
+    var vehicle: VehicleType? = null,
+    var travelMode: TravelMode = TravelMode.Walk,
+    var parkingSpot: CellCoord? = null
 ) {
     val isHomeless: Boolean get() = homeId == null
     val isPartnered: Boolean get() = partnerId != null

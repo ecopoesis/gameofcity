@@ -11,7 +11,7 @@ data class ClockData(
 
 @Serializable
 data class SaveData(
-    val version: Int = 4,
+    val version: Int = 5,
     val tick: Long,
     val clock: ClockData? = null,
     val map: MapData,
@@ -92,5 +92,10 @@ data class PeepData(
     val brainType: String,
     val schedule: String = "Worker",
     val friendships: Map<Int, Float> = emptyMap(),
-    val relationships: Map<Int, String> = emptyMap()
+    val relationships: Map<Int, String> = emptyMap(),
+    val vehicle: String? = null,
+    val travelMode: String = "Walk",
+    val parkingSpotX: Int? = null,
+    val parkingSpotY: Int? = null,
+    val parkingSpotZ: Int? = null
 )

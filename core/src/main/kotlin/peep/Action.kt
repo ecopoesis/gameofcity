@@ -17,6 +17,8 @@ sealed class Action {
     data class Exercise(val buildingId: BuildingId) : Action()
     data class Relax(val buildingId: BuildingId) : Action()
     data class Watch(val buildingId: BuildingId) : Action()
+    data class ParkCar(val spot: CellCoord) : Action()
+    data class RetrieveCar(val spot: CellCoord) : Action()
     object Idle : Action()
 
     fun targetBuildingId(): Int? = when (this) {
@@ -30,6 +32,6 @@ sealed class Action {
         is Exercise -> buildingId
         is Relax -> buildingId
         is Watch -> buildingId
-        is MoveTo, is Socialize, Idle -> null
+        is MoveTo, is Socialize, is ParkCar, is RetrieveCar, Idle -> null
     }
 }
