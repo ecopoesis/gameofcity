@@ -85,7 +85,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | Scale + Road Classification | #28 | ✅ Done |
 | Multi-Lane Roads + Blocks | #29 | ✅ Done |
 | Pathfinding Upgrade | #30 | ✅ Done |
-| Vehicle Model | #31 | |
+| Vehicle Model | #31 | ✅ Done |
 | Parking Infrastructure | #32 | |
 | Brains Learn to Drive | #33 | |
 | Vehicle + Road Rendering | #34 | |
@@ -115,6 +115,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | `core/src/main/kotlin/tick/EventLog.kt` | Ring-buffered event log (evictions, births, deaths, etc.) |
 | `core/src/main/kotlin/tick/CityStats.kt` | Aggregate city statistics (employment, happiness, Gini) |
 | `core/src/main/kotlin/world/Weather.kt` | Weather state machine (Clear/Rain/Snow/Heatwave) |
+| `core/src/main/kotlin/world/Vehicle.kt` | VehicleType enum (Car, Bike) |
 | `core/src/main/kotlin/pathfind/BinaryHeap.kt` | Pure Kotlin min-heap priority queue |
 | `core/src/main/kotlin/pathfind/AStarPathfinder.kt` | Multi-modal A* pathfinding with variable movement costs |
 | `core/src/main/kotlin/gen/CityGenerator.kt` | Procedural city gen (grid + organic roads) |
