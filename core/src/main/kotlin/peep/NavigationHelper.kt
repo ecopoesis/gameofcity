@@ -2,6 +2,7 @@ package peep
 
 import pathfind.AStarPathfinder
 import world.CellCoord
+import world.TravelMode
 import world.WorldMap
 
 class NavigationHelper {
@@ -27,9 +28,14 @@ class NavigationHelper {
         return null
     }
 
-    fun navigateTo(from: CellCoord, to: CellCoord, pf: AStarPathfinder, terminal: Action): Action {
+    /** Navigate using legacy passability (all terrains). */
+    fun navigateTo(from: CellCoord, to: CellCoord, pf: AStarPathfinder, terminal: Action): Action =
+        navigateTo(from, to, pf, null, terminal)
+
+    /** Navigate using a specific travel mode for pathfinding. */
+    fun navigateTo(from: CellCoord, to: CellCoord, pf: AStarPathfinder, mode: TravelMode?, terminal: Action): Action {
         if (from == to) return terminal
-        val path = pf.findPath(from, to)
+        val path = pf.findPath(from, to, mode)
         if (path.isEmpty()) return Action.Idle
         pathQueue.clear()
         pathQueue.addAll(path)
