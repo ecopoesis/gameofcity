@@ -86,7 +86,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | Multi-Lane Roads + Blocks | #29 | ✅ Done |
 | Pathfinding Upgrade | #30 | ✅ Done |
 | Vehicle Model | #31 | ✅ Done |
-| Parking Infrastructure | #32 | |
+| Parking Infrastructure | #32 | ✅ Done |
 | Brains Learn to Drive | #33 | |
 | Vehicle + Road Rendering | #34 | |
 | Bus Transit System | #35 | |
