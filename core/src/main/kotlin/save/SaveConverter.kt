@@ -2,6 +2,10 @@ package save
 
 import peep.*
 import tick.TickEngine
+import transit.Bus
+import transit.BusRoute
+import transit.BusStop
+import transit.TransitSystem
 import world.*
 
 object SaveConverter {
@@ -86,7 +90,15 @@ object SaveConverter {
         )
 
         val parkedVehicles = map.parkedVehicles.keys.map { CoordData(it.x, it.y, it.z) }
-        return SaveData(tick = engine.tick, clock = clockData, map = MapData(map.width, map.height, cells, buildings, parkedVehicles), peeps = peeps)
+
+        // Transit data
+        val transitData = TransitData(
+            stops = engine.transit.stops.values.map { BusStopData(it.id, it.coord.x, it.coord.y, it.name) },
+            routes = engine.transit.routes.values.map { BusRouteData(it.id, it.name, it.stops.map { s -> s.id }, it.headwayTicks) },
+            buses = engine.transit.buses.values.map { BusData(it.id, it.routeId, it.position.x, it.position.y, it.currentStopIndex, it.movingForward, it.passengers.toList()) }
+        )
+
+        return SaveData(tick = engine.tick, clock = clockData, map = MapData(map.width, map.height, cells, buildings, parkedVehicles), peeps = peeps, transit = transitData)
     }
 
     fun fromSaveData(data: SaveData): TickEngine {
@@ -182,6 +194,27 @@ object SaveConverter {
             engine.addPeep(peep)
             if (parkingSpot != null) {
                 map.parkedVehicles[parkingSpot] = peep.id
+            }
+        }
+
+        // Restore transit
+        val td = data.transit
+        if (td != null) {
+            val stopsById = mutableMapOf<Int, BusStop>()
+            for (sd in td.stops) {
+                val stop = BusStop(sd.id, CellCoord(sd.x, sd.y), sd.name)
+                stopsById[stop.id] = stop
+                engine.transit.addStop(stop)
+            }
+            for (rd in td.routes) {
+                val routeStops = rd.stopIds.mapNotNull { stopsById[it] }
+                if (routeStops.size >= 2) {
+                    engine.transit.addRoute(BusRoute(rd.id, rd.name, routeStops, rd.headwayTicks))
+                }
+            }
+            for (bd in td.buses) {
+                val bus = Bus(bd.id, bd.routeId, CellCoord(bd.x, bd.y), bd.currentStopIndex, bd.passengers.toMutableList(), 0, bd.movingForward)
+                engine.transit.buses[bus.id] = bus
             }
         }
 

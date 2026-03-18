@@ -37,6 +37,7 @@ private val broadcaster = SimBroadcaster(json)
 private fun createEngine(config: CityGenConfig): TickEngine {
     val map = CityGenerator.generate(config)
     val eng = TickEngine(map)
+    CityGenerator.generateTransit(map, eng.transit)
     PeepSpawner.spawn(eng, config.peepCount)
     return eng
 }

@@ -130,6 +130,8 @@ let peepMesh = null;
 let carMesh = null;
 let bikeMesh = null;
 let parkedCarMesh = null;
+let busMesh = null;
+let busData = [];
 let peepData = [];
 let prevPeepData = [];
 let lastPeepTime = 0;
@@ -361,6 +363,32 @@ function updateParkedCars(parkedVehicles) {
         parkedCarMesh.setMatrixAt(i, hideMatrix);
     }
     parkedCarMesh.instanceMatrix.needsUpdate = true;
+}
+
+function updateBuses() {
+    if (busData.length === 0) {
+        if (busMesh) { scene.remove(busMesh); busMesh = null; }
+        return;
+    }
+    if (!busMesh || busData.length > busMesh.count) {
+        if (busMesh) scene.remove(busMesh);
+        const geo = new THREE.BoxGeometry(16, 8, 10);
+        const mat = new THREE.MeshPhongMaterial({ color: new THREE.Color(0.95, 0.75, 0.10), emissive: 0x332200 });
+        busMesh = new THREE.InstancedMesh(geo, mat, busData.length);
+        busMesh.frustumCulled = false;
+        scene.add(busMesh);
+    }
+    const matrix = new THREE.Matrix4();
+    for (let i = 0; i < busData.length; i++) {
+        const b = busData[i];
+        matrix.setPosition(b.x * CS + CS / 2, TERRAIN_H + PEEP_H + 4, b.y * CS + CS / 2);
+        busMesh.setMatrixAt(i, matrix);
+    }
+    const hideMatrix = new THREE.Matrix4().setPosition(0, -1000, 0);
+    for (let i = busData.length; i < busMesh.count; i++) {
+        busMesh.setMatrixAt(i, hideMatrix);
+    }
+    busMesh.instanceMatrix.needsUpdate = true;
 }
 
 function updatePeeps(interpolate) {
@@ -675,6 +703,11 @@ function connect() {
             // Update parked vehicles from snapshot
             if (msg.data.map.parkedVehicles) {
                 updateParkedCars(msg.data.map.parkedVehicles);
+            }
+            // Update buses from snapshot
+            if (msg.data.transit && msg.data.transit.buses) {
+                busData = msg.data.transit.buses.map(b => ({ x: b.x, y: b.y }));
+                updateBuses();
             }
             prevPeepData = peepData;
             peepData = msg.data.peeps.map(p => ({

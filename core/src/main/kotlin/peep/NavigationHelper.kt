@@ -1,6 +1,7 @@
 package peep
 
 import pathfind.AStarPathfinder
+import transit.TransitSystem
 import world.BuildingSubtype
 import world.CellCoord
 import world.Terrain
@@ -23,6 +24,35 @@ class NavigationHelper {
         _pathfinder ?: AStarPathfinder(map).also { _pathfinder = it }
 
     fun pendingAction(peep: Peep, world: WorldView): Action? {
+        // Currently riding a bus — check if we should alight
+        if (peep.ridingBusId != null) {
+            val bus = world.transit.buses[peep.ridingBusId]
+            if (bus != null) {
+                val route = world.transit.routes[bus.routeId]
+                val currentStop = route?.stops?.getOrNull(bus.currentStopIndex)
+                if (currentStop != null && currentStop.id == peep.alightAtStopId && bus.ticksAtStop > 0) {
+                    // Alight at this stop
+                    world.transit.alightBus(peep.id)
+                    peep.ridingBusId = null
+                    peep.travelMode = TravelMode.Walk
+                    peep.alightAtStopId = null
+                    // Continue with remaining trip legs
+                    if (upcomingLegs.isNotEmpty()) {
+                        val leg = upcomingLegs.removeFirst()
+                        val pf = _pathfinder ?: return Action.Idle
+                        return navigateTo(peep.position, leg.destination, pf, leg.mode, leg.terminal)
+                    }
+                    return Action.Idle
+                }
+            } else {
+                // Bus disappeared — reset
+                peep.ridingBusId = null
+                peep.travelMode = TravelMode.Walk
+                peep.alightAtStopId = null
+            }
+            return Action.RideBus(peep.ridingBusId ?: return Action.Idle)
+        }
+
         // Keep walking/driving current path
         if (pathQueue.isNotEmpty()) {
             val mode = currentTravelMode ?: peep.travelMode
@@ -76,7 +106,8 @@ class NavigationHelper {
     fun planTrip(
         from: CellCoord, to: CellCoord,
         map: WorldMap, pf: AStarPathfinder,
-        peep: Peep, terminal: Action
+        peep: Peep, terminal: Action,
+        transit: TransitSystem? = null
     ): Action {
         upcomingLegs.clear()
 
@@ -97,8 +128,28 @@ class NavigationHelper {
 
         // Bike trip
         if (peep.vehicle == VehicleType.Bike && from.distanceTo(to) > 10) {
-            // Bike directly on roads, then walk the last bit
             return navigateTo(from, to, pf, TravelMode.Bike, terminal)
+        }
+
+        // Bus trip: no car, distance > 20, transit system available
+        if (peep.vehicle != VehicleType.Car && transit != null && from.distanceTo(to) > 20) {
+            val originStop = transit.nearestStop(from)
+            if (originStop != null && originStop.coord.distanceTo(from) < 30) {
+                val routeInfo = transit.findBestRoute(originStop, to)
+                if (routeInfo != null) {
+                    val (_, destStop) = routeInfo
+                    // Only use bus if it actually saves walking distance
+                    if (destStop.coord.distanceTo(to) < from.distanceTo(to) * 0.7) {
+                        peep.alightAtStopId = destStop.id
+                        // Leg 2: wait for bus at origin stop
+                        upcomingLegs.addLast(TripLeg(originStop.coord, null, Action.WaitForBus(originStop.id)))
+                        // Leg 3: walk from dest stop to destination
+                        upcomingLegs.addLast(TripLeg(to, TravelMode.Walk, terminal))
+                        // Leg 1: walk to nearest bus stop
+                        return navigateWithoutClearingLegs(from, originStop.coord, pf, TravelMode.Walk, Action.WaitForBus(originStop.id))
+                    }
+                }
+            }
         }
 
         // Default: walk directly

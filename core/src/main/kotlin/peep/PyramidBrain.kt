@@ -21,7 +21,7 @@ class PyramidBrain : Brain {
         if (sched.isSleepTime(hour) && maxNeed < 0.7f && peep.homeId != null) {
             val home = world.map.buildings[peep.homeId!!]
             if (home != null) {
-                return nav.planTrip(peep.position, home.cells.first(), world.map, pf, peep, Action.Sleep(home.id))
+                return nav.planTrip(peep.position, home.cells.first(), world.map, pf, peep, Action.Sleep(home.id), world.transit)
             }
         }
 
@@ -29,7 +29,7 @@ class PyramidBrain : Brain {
         if (sched.isWorkTime(hour) && maxNeed < 0.5f && peep.jobId != null) {
             val job = world.map.buildings[peep.jobId!!]
             if (job != null) {
-                return nav.planTrip(peep.position, job.cells.first(), world.map, pf, peep, Action.Work(job.id))
+                return nav.planTrip(peep.position, job.cells.first(), world.map, pf, peep, Action.Work(job.id), world.transit)
             }
         }
 
@@ -44,7 +44,7 @@ class PyramidBrain : Brain {
                 if (candidate != null) {
                     return nav.planTrip(
                         peep.position, candidate.building.cells.first(),
-                        world.map, pf, peep, candidate.action
+                        world.map, pf, peep, candidate.action, world.transit
                     )
                 }
                 return Action.Idle
@@ -58,7 +58,7 @@ class PyramidBrain : Brain {
         if (peep.homeId != null) {
             val home = world.map.buildings[peep.homeId!!]
             if (home != null) {
-                return nav.planTrip(peep.position, home.cells.first(), world.map, pf, peep, Action.Sleep(home.id))
+                return nav.planTrip(peep.position, home.cells.first(), world.map, pf, peep, Action.Sleep(home.id), world.transit)
             }
         }
         return Action.Idle

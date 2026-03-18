@@ -1,6 +1,7 @@
 import pathfind.AStarPathfinder
 import peep.*
 import tick.SimClock
+import transit.TransitSystem
 import world.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -193,6 +194,7 @@ class VehicleTest {
             override val tick: Long = 0L
             override val clock = SimClock()
             override val weather: Weather = Weather()
+            override val transit: TransitSystem = TransitSystem()
         }
     }
 }

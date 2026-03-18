@@ -1,5 +1,8 @@
 package gen
 
+import transit.BusRoute
+import transit.BusStop
+import transit.TransitSystem
 import world.*
 import kotlin.random.Random
 
@@ -535,4 +538,95 @@ object CityGenerator {
         BuildingSubtype.Cafe, BuildingSubtype.Shop, BuildingSubtype.Workshop,
         BuildingSubtype.Library, BuildingSubtype.GroceryStore
     )
+
+    /** Generate bus stops and routes for an existing map. */
+    fun generateTransit(map: WorldMap, transit: TransitSystem, rng: Random = Random) {
+        val stopInterval = 50 // place stops every ~50 cells along arterial/collector roads
+        val stops = mutableListOf<BusStop>()
+        var nextStopId = 0
+
+        // Find stop locations along major roads
+        for (x in 0 until map.width step stopInterval) {
+            for (y in 0 until map.height step stopInterval) {
+                // Search a small area for an arterial/collector road cell with adjacent sidewalk
+                val stopCoord = findBusStopLocation(map, x, y)
+                if (stopCoord != null) {
+                    val stop = BusStop(nextStopId++, stopCoord, "Stop ${stops.size + 1}")
+                    stops.add(stop)
+                    transit.addStop(stop)
+                    // Place Platform terrain at the stop
+                    map.setCell(Cell(stopCoord, Terrain.Platform))
+                }
+            }
+        }
+
+        if (stops.size < 2) return
+
+        // Generate 2-4 bus routes connecting different zones
+        val numRoutes = (stops.size / 4).coerceIn(2, 4)
+        val usedStops = mutableSetOf<Int>()
+
+        for (routeId in 0 until numRoutes) {
+            val routeStops = pickRouteStops(stops, usedStops, rng)
+            if (routeStops.size < 2) continue
+
+            routeStops.forEach { usedStops.add(it.id) }
+            val route = BusRoute(
+                id = routeId,
+                name = "Route ${routeId + 1}",
+                stops = routeStops,
+                headwayTicks = 300 // every 5 sim-minutes
+            )
+            transit.addRoute(route)
+        }
+    }
+
+    private fun findBusStopLocation(map: WorldMap, centerX: Int, centerY: Int): CellCoord? {
+        // Search a small radius for an arterial/collector road cell
+        for (dx in -10..10) {
+            for (dy in -10..10) {
+                val x = centerX + dx
+                val y = centerY + dy
+                val cell = map.getCell(CellCoord(x, y)) ?: continue
+                if (cell.terrain != Terrain.ArterialRoad && cell.terrain != Terrain.CollectorRoad) continue
+                if (cell.buildingId != null) continue
+
+                // Find an adjacent sidewalk cell for the platform
+                val candidates = listOf(
+                    CellCoord(x - 1, y), CellCoord(x + 1, y),
+                    CellCoord(x, y - 1), CellCoord(x, y + 1)
+                )
+                val sidewalk = candidates.firstOrNull { c ->
+                    val adj = map.getCell(c)
+                    adj != null && adj.terrain == Terrain.Sidewalk && adj.buildingId == null
+                }
+                if (sidewalk != null) return sidewalk
+            }
+        }
+        return null
+    }
+
+    private fun pickRouteStops(allStops: List<BusStop>, used: Set<Int>, rng: Random): List<BusStop> {
+        // Pick a starting stop (prefer unused)
+        val available = allStops.filter { it.id !in used }
+        val start = if (available.isNotEmpty()) available[rng.nextInt(available.size)] else allStops[rng.nextInt(allStops.size)]
+
+        // Build route by picking nearest unvisited stops
+        val route = mutableListOf(start)
+        val visited = mutableSetOf(start.id)
+        val maxStops = (allStops.size / 2).coerceIn(3, 8)
+
+        repeat(maxStops - 1) {
+            val last = route.last()
+            val next = allStops
+                .filter { it.id !in visited }
+                .minByOrNull { it.coord.distanceTo(last.coord) }
+            if (next != null) {
+                route.add(next)
+                visited.add(next.id)
+            }
+        }
+
+        return route
+    }
 }

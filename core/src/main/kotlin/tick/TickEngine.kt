@@ -13,6 +13,7 @@ import peep.ScheduleType
 import peep.UtilityBrain
 import peep.WorldView
 import gen.PeepSpawner
+import transit.TransitSystem
 import world.BuildingSubtype
 import world.CellCoord
 import world.Weather
@@ -40,6 +41,7 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
     val eventLog: EventLog = EventLog()
     var stats: CityStats = CityStats(); private set
     val weather: Weather = Weather()
+    val transit: TransitSystem = TransitSystem()
 
     private val worldView = object : WorldView {
         override val map: WorldMap get() = this@TickEngine.map
@@ -47,6 +49,7 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
         override val tick: Long get() = this@TickEngine.tick
         override val clock: SimClock get() = this@TickEngine.clock
         override val weather: Weather get() = this@TickEngine.weather
+        override val transit: TransitSystem get() = this@TickEngine.transit
     }
 
     fun addPeep(peep: Peep) {
@@ -112,6 +115,15 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
 
         // Phase 5: Maintain
         maintain()
+
+        // Advance buses and update riding peep positions
+        val busPositions = transit.advance()
+        busPositions.forEach { (peepId, newPos) ->
+            val peep = peeps[peepId] ?: return@forEach
+            map.peepsAt[peep.position]?.remove(peepId)
+            peep.position = newPos
+            map.peepsAt.getOrPut(newPos) { mutableListOf() }.add(peepId)
+        }
 
         weather.advance()
         clock.advance()
@@ -234,6 +246,17 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 peep.travelMode = TravelMode.Drive
                 map.parkedVehicles.remove(action.spot)
                 peep.parkingSpot = null
+            }
+            is Action.WaitForBus -> {
+                // Try to board a bus at this stop
+                val bus = transit.boardBus(peep.id, action.stopId)
+                if (bus != null) {
+                    peep.travelMode = TravelMode.Bus
+                    peep.ridingBusId = bus.id
+                }
+            }
+            is Action.RideBus -> {
+                // Peep is riding — position updated by TransitSystem.advance()
             }
             is Action.Idle -> Unit
         }

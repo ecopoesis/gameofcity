@@ -29,7 +29,9 @@ data class Peep(
     var interactionCount: MutableMap<PeepId, Int> = mutableMapOf(),
     var vehicle: VehicleType? = null,
     var travelMode: TravelMode = TravelMode.Walk,
-    var parkingSpot: CellCoord? = null
+    var parkingSpot: CellCoord? = null,
+    var ridingBusId: Int? = null,
+    var alightAtStopId: Int? = null
 ) {
     val isHomeless: Boolean get() = homeId == null
     val isPartnered: Boolean get() = partnerId != null

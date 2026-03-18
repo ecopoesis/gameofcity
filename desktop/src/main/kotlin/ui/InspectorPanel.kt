@@ -305,6 +305,8 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         is Action.Socialize -> "Socialize(p${a.targetPeepId})"
         is Action.ParkCar   -> "ParkCar(${a.spot.x},${a.spot.y})"
         is Action.RetrieveCar -> "RetrieveCar(${a.spot.x},${a.spot.y})"
+        is Action.WaitForBus -> "WaitForBus(stop${a.stopId})"
+        is Action.RideBus   -> "RideBus(bus${a.busId})"
         Action.Idle         -> "Idle"
     }
 

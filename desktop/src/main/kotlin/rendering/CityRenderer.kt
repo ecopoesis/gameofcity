@@ -150,6 +150,7 @@ class CityRenderer(
         val CAR_COLOR = Color(0.85f, 0.20f, 0.20f, 1f)
         val BIKE_COLOR = Color(0.20f, 0.75f, 0.30f, 1f)
         val PARKED_CAR_COLOR = Color(0.60f, 0.15f, 0.15f, 1f)
+        val BUS_COLOR = Color(0.95f, 0.75f, 0.10f, 1f)
 
         val NEED_COLORS = mapOf(
             NeedType.Hunger to Color(1f, 0.3f, 0.3f, 1f),
@@ -268,6 +269,16 @@ class CityRenderer(
             if (tmp.z in 0f..1f) {
                 overlayShapes.color = PARKED_CAR_COLOR
                 overlayShapes.rect(tmp.x - 5f, tmp.y - 3f, 10f, 6f)
+            }
+        }
+
+        // Buses
+        engine.transit.buses.values.forEach { bus ->
+            tmp.set(bus.position.x * CS + CS / 2f, TERRAIN_H + PEEP_H + 4f, bus.position.y * CS + CS / 2f)
+            controller.camera.project(tmp)
+            if (tmp.z in 0f..1f) {
+                overlayShapes.color = BUS_COLOR
+                overlayShapes.rect(tmp.x - 8f, tmp.y - 5f, 16f, 10f)
             }
         }
 
