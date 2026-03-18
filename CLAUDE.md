@@ -89,7 +89,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | Parking Infrastructure | #32 | ✅ Done |
 | Brains Learn to Drive | #33 | ✅ Done |
 | Vehicle + Road Rendering | #34 | ✅ Done |
-| Bus Transit System | #35 | |
+| Bus Transit System | #35 | ✅ Done |
 | Train + Subway System | #36 | |
 | Transport Economics | #37 | |
 
@@ -118,6 +118,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | `core/src/main/kotlin/world/Vehicle.kt` | VehicleType enum (Car, Bike) |
 | `core/src/main/kotlin/pathfind/BinaryHeap.kt` | Pure Kotlin min-heap priority queue |
 | `core/src/main/kotlin/pathfind/AStarPathfinder.kt` | Multi-modal A* pathfinding with variable movement costs |
+| `core/src/main/kotlin/transit/TransitSystem.kt` | Bus transit: routes, stops, bus advancement |
 | `core/src/main/kotlin/gen/CityGenerator.kt` | Procedural city gen (grid + organic roads) |
 | `desktop/src/main/kotlin/GameOfCityApp.kt` | Main game loop, camera pan |
 | `desktop/src/main/kotlin/rendering/CityRenderer.kt` | 3D city render with subtype colors |
