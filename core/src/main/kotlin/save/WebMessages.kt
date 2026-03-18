@@ -11,7 +11,9 @@ data class PeepPosition(
     val fatigue: Float,
     val topNeed: String? = null,
     val topNeedValue: Float = 0f,
-    val homeless: Boolean = false
+    val homeless: Boolean = false,
+    val travelMode: String = "Walk",
+    val vehicle: String? = null
 )
 
 @Serializable

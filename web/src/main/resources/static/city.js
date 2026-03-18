@@ -47,6 +47,10 @@ const BUILDING_COLORS = {
     Theater:         new THREE.Color(0.50, 0.75, 0.25),
     Stadium:         new THREE.Color(0.60, 0.85, 0.40),
     Museum:          new THREE.Color(0.40, 0.65, 0.20),
+    PoliceStation:   new THREE.Color(0.30, 0.40, 0.80),
+    FireStation:     new THREE.Color(0.85, 0.25, 0.20),
+    ParkingLot:      new THREE.Color(0.50, 0.50, 0.55),
+    ParkingGarage:   new THREE.Color(0.45, 0.45, 0.50),
     // Category fallbacks
     Residential:     new THREE.Color(0.80, 0.50, 0.20),
     Commercial:      new THREE.Color(0.20, 0.50, 0.90),
@@ -63,6 +67,7 @@ const BUILDING_HEIGHTS = {
     Factory: 32, Warehouse: 24, Workshop: 28,
     Hospital: 64, School: 48, Library: 36, CommunityCenter: 40,
     Park: 4, Gym: 32, Theater: 56, Stadium: 80, Museum: 48,
+    PoliceStation: 40, FireStation: 36, ParkingLot: 8, ParkingGarage: 48,
     // Category fallbacks
     Residential: 64, Commercial: 48, Industrial: 32,
     Civic: 48, Recreation: 32, Entertainment: 96,
@@ -122,6 +127,9 @@ let mapBuilt = false;
 let terrainGroup = null;
 let buildingGroup = null;
 let peepMesh = null;
+let carMesh = null;
+let bikeMesh = null;
+let parkedCarMesh = null;
 let peepData = [];
 let prevPeepData = [];
 let lastPeepTime = 0;
@@ -288,14 +296,71 @@ function buildCity(data) {
 }
 
 // --- Peep rendering ---
+const CAR_COLOR = new THREE.Color(0.85, 0.20, 0.20);
+const BIKE_COLOR = new THREE.Color(0.20, 0.75, 0.30);
+const PARKED_CAR_COLOR = new THREE.Color(0.60, 0.15, 0.15);
+
 function initPeeps(count) {
     if (peepMesh) scene.remove(peepMesh);
-    const geo = new THREE.SphereGeometry(6, 8, 6);
-    const mat = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x333333 });
-    peepMesh = new THREE.InstancedMesh(geo, mat, Math.max(count, 1));
+    if (carMesh) scene.remove(carMesh);
+    if (bikeMesh) scene.remove(bikeMesh);
+
+    const n = Math.max(count, 1);
+
+    // Walking peeps — spheres
+    const peepGeo = new THREE.SphereGeometry(6, 8, 6);
+    const peepMat = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x333333 });
+    peepMesh = new THREE.InstancedMesh(peepGeo, peepMat, n);
     peepMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     peepMesh.frustumCulled = false;
     scene.add(peepMesh);
+
+    // Driving peeps — boxes (cars)
+    const carGeo = new THREE.BoxGeometry(12, 6, 8);
+    const carMat = new THREE.MeshPhongMaterial({ color: CAR_COLOR, emissive: 0x331111 });
+    carMesh = new THREE.InstancedMesh(carGeo, carMat, n);
+    carMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    carMesh.frustumCulled = false;
+    scene.add(carMesh);
+
+    // Biking peeps — small elongated boxes
+    const bikeGeo = new THREE.BoxGeometry(8, 5, 5);
+    const bikeMat = new THREE.MeshPhongMaterial({ color: BIKE_COLOR, emissive: 0x113311 });
+    bikeMesh = new THREE.InstancedMesh(bikeGeo, bikeMat, n);
+    bikeMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    bikeMesh.frustumCulled = false;
+    scene.add(bikeMesh);
+}
+
+function initParkedCars(count) {
+    if (parkedCarMesh) scene.remove(parkedCarMesh);
+    if (count <= 0) return;
+    const geo = new THREE.BoxGeometry(10, 4, 6);
+    const mat = new THREE.MeshPhongMaterial({ color: PARKED_CAR_COLOR, emissive: 0x220808 });
+    parkedCarMesh = new THREE.InstancedMesh(geo, mat, count);
+    parkedCarMesh.frustumCulled = false;
+    scene.add(parkedCarMesh);
+}
+
+function updateParkedCars(parkedVehicles) {
+    if (!parkedVehicles || parkedVehicles.length === 0) {
+        if (parkedCarMesh) { scene.remove(parkedCarMesh); parkedCarMesh = null; }
+        return;
+    }
+    if (!parkedCarMesh || parkedVehicles.length > parkedCarMesh.count) {
+        initParkedCars(parkedVehicles.length);
+    }
+    const matrix = new THREE.Matrix4();
+    for (let i = 0; i < parkedVehicles.length; i++) {
+        const v = parkedVehicles[i];
+        matrix.setPosition(v.x * CS + CS / 2, TERRAIN_H + 4, v.y * CS + CS / 2);
+        parkedCarMesh.setMatrixAt(i, matrix);
+    }
+    const hideMatrix = new THREE.Matrix4().setPosition(0, -1000, 0);
+    for (let i = parkedVehicles.length; i < parkedCarMesh.count; i++) {
+        parkedCarMesh.setMatrixAt(i, hideMatrix);
+    }
+    parkedCarMesh.instanceMatrix.needsUpdate = true;
 }
 
 function updatePeeps(interpolate) {
@@ -307,8 +372,11 @@ function updatePeeps(interpolate) {
 
     const matrix = new THREE.Matrix4();
     const color = new THREE.Color();
+    const hideMatrix = new THREE.Matrix4().setPosition(0, -1000, 0);
     const elapsed = performance.now() - lastPeepTime;
     const t = interpolate ? Math.min(elapsed / tickDelayMs, 1) : 1;
+
+    let peepIdx = 0, carIdx = 0, bikeIdx = 0;
 
     for (let i = 0; i < peepData.length; i++) {
         const p = peepData[i];
@@ -323,32 +391,39 @@ function updatePeeps(interpolate) {
             wz = p.y * CS + CS / 2;
         }
         const wy = TERRAIN_H + PEEP_H;
-
         matrix.setPosition(wx, wy, wz);
-        peepMesh.setMatrixAt(i, matrix);
 
-        // Color based on status
-        if (p.homeless) {
-            color.setRGB(0.5, 0.5, 0.5);
+        if (p.travelMode === 'Drive') {
+            carMesh.setMatrixAt(carIdx++, matrix);
+        } else if (p.travelMode === 'Bike') {
+            bikeMesh.setMatrixAt(bikeIdx++, matrix);
         } else {
-            const needColor = p.topNeed && p.topNeedValue > 0.3 ? NEED_COLORS[p.topNeed] : null;
-            if (needColor) {
-                color.setRGB(needColor[0], needColor[1], needColor[2]);
+            peepMesh.setMatrixAt(peepIdx, matrix);
+            // Color based on status
+            if (p.homeless) {
+                color.setRGB(0.5, 0.5, 0.5);
             } else {
-                color.setRGB(1, 1, 1);
+                const needColor = p.topNeed && p.topNeedValue > 0.3 ? NEED_COLORS[p.topNeed] : null;
+                if (needColor) {
+                    color.setRGB(needColor[0], needColor[1], needColor[2]);
+                } else {
+                    color.setRGB(1, 1, 1);
+                }
             }
+            peepMesh.setColorAt(peepIdx, color);
+            peepIdx++;
         }
-        peepMesh.setColorAt(i, color);
     }
 
     // Hide unused instances
-    const hideMatrix = new THREE.Matrix4().setPosition(0, -1000, 0);
-    for (let i = peepData.length; i < peepMesh.count; i++) {
-        peepMesh.setMatrixAt(i, hideMatrix);
-    }
+    for (let i = peepIdx; i < peepMesh.count; i++) peepMesh.setMatrixAt(i, hideMatrix);
+    for (let i = carIdx; i < carMesh.count; i++) carMesh.setMatrixAt(i, hideMatrix);
+    for (let i = bikeIdx; i < bikeMesh.count; i++) bikeMesh.setMatrixAt(i, hideMatrix);
 
     peepMesh.instanceMatrix.needsUpdate = true;
     if (peepMesh.instanceColor) peepMesh.instanceColor.needsUpdate = true;
+    carMesh.instanceMatrix.needsUpdate = true;
+    bikeMesh.instanceMatrix.needsUpdate = true;
 }
 
 // --- Inspector ---
@@ -375,6 +450,8 @@ function showPeepInspector(peepId) {
         <div class="row"><span class="label">Home</span><span>${peep.homeId != null ? '#' + peep.homeId : 'None'}</span></div>
         <div class="row"><span class="label">Job</span><span>${peep.jobId != null ? '#' + peep.jobId : 'None'}</span></div>
         <div class="row"><span class="label">Brain</span><span>${peep.brainType}</span></div>
+        <div class="row"><span class="label">Vehicle</span><span>${peep.vehicle || 'None'}</span></div>
+        <div class="row"><span class="label">Travel</span><span>${peep.travelMode || 'Walk'}</span></div>
     `;
 
     // Maslow needs grouped by level
@@ -595,12 +672,19 @@ function connect() {
                 buildCity(msg.data);
                 initPeeps(msg.data.peeps.length);
             }
+            // Update parked vehicles from snapshot
+            if (msg.data.map.parkedVehicles) {
+                updateParkedCars(msg.data.map.parkedVehicles);
+            }
             prevPeepData = peepData;
             peepData = msg.data.peeps.map(p => ({
                 id: p.id, x: p.posX, y: p.posY,
                 hunger: p.hunger, fatigue: p.fatigue,
                 topNeed: p.maslowNeeds ? getTopNeed(p.maslowNeeds) : null,
-                topNeedValue: p.maslowNeeds ? getTopNeedValue(p.maslowNeeds) : 0
+                topNeedValue: p.maslowNeeds ? getTopNeedValue(p.maslowNeeds) : 0,
+                travelMode: p.travelMode || 'Walk',
+                vehicle: p.vehicle || null,
+                homeless: p.homeless || false
             }));
             lastPeepTime = performance.now();
             const cd = msg.data.clock;

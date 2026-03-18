@@ -23,7 +23,8 @@ data class MapData(
     val width: Int,
     val height: Int,
     val cells: List<CellData>,
-    val buildings: List<BuildingData>
+    val buildings: List<BuildingData>,
+    val parkedVehicles: List<CoordData> = emptyList()
 )
 
 @Serializable

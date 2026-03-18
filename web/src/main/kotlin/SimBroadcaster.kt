@@ -51,7 +51,9 @@ class SimBroadcaster(private val json: Json) {
                 fatigue = peep.needs.sleep,
                 topNeed = top?.first?.name,
                 topNeedValue = top?.second ?: 0f,
-                homeless = peep.isHomeless
+                homeless = peep.isHomeless,
+                travelMode = peep.travelMode.name,
+                vehicle = peep.vehicle?.name
             )
         }
         val message = json.encodeToString(

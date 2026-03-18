@@ -22,6 +22,7 @@ import tick.TickEngine
 import world.BuildingSubtype
 import world.BuildingType
 import world.CellCoord
+import world.TravelMode
 import world.Terrain
 
 class CityRenderer(
@@ -76,7 +77,11 @@ class CityRenderer(
             BuildingSubtype.Gym to 32f,
             BuildingSubtype.Theater to 56f,
             BuildingSubtype.Stadium to 80f,
-            BuildingSubtype.Museum to 48f
+            BuildingSubtype.Museum to 48f,
+            BuildingSubtype.PoliceStation to 40f,
+            BuildingSubtype.FireStation to 36f,
+            BuildingSubtype.ParkingLot to 8f,
+            BuildingSubtype.ParkingGarage to 48f
         )
 
         val CATEGORY_HEIGHTS = mapOf(
@@ -108,7 +113,11 @@ class CityRenderer(
             BuildingSubtype.Gym to Color(0.55f, 0.70f, 0.30f, 1f),
             BuildingSubtype.Theater to Color(0.50f, 0.75f, 0.25f, 1f),
             BuildingSubtype.Stadium to Color(0.60f, 0.85f, 0.40f, 1f),
-            BuildingSubtype.Museum to Color(0.40f, 0.65f, 0.20f, 1f)
+            BuildingSubtype.Museum to Color(0.40f, 0.65f, 0.20f, 1f),
+            BuildingSubtype.PoliceStation to Color(0.30f, 0.40f, 0.80f, 1f),
+            BuildingSubtype.FireStation to Color(0.85f, 0.25f, 0.20f, 1f),
+            BuildingSubtype.ParkingLot to Color(0.50f, 0.50f, 0.55f, 1f),
+            BuildingSubtype.ParkingGarage to Color(0.45f, 0.45f, 0.50f, 1f)
         )
 
         val CATEGORY_COLORS = mapOf(
@@ -137,6 +146,10 @@ class CityRenderer(
             Terrain.Platform      to Color(0.66f, 0.66f, 0.66f, 1f),
             Terrain.Empty         to Color(0.10f, 0.10f, 0.15f, 1f)
         )
+
+        val CAR_COLOR = Color(0.85f, 0.20f, 0.20f, 1f)
+        val BIKE_COLOR = Color(0.20f, 0.75f, 0.30f, 1f)
+        val PARKED_CAR_COLOR = Color(0.60f, 0.15f, 0.15f, 1f)
 
         val NEED_COLORS = mapOf(
             NeedType.Hunger to Color(1f, 0.3f, 0.3f, 1f),
@@ -247,13 +260,40 @@ class CityRenderer(
 
         val tmp = Vector3()
 
+        // Parked vehicles
         overlayShapes.begin(ShapeRenderer.ShapeType.Filled)
+        engine.map.parkedVehicles.forEach { (coord, _) ->
+            tmp.set(coord.x * CS + CS / 2f, TERRAIN_H + 4f, coord.y * CS + CS / 2f)
+            controller.camera.project(tmp)
+            if (tmp.z in 0f..1f) {
+                overlayShapes.color = PARKED_CAR_COLOR
+                overlayShapes.rect(tmp.x - 5f, tmp.y - 3f, 10f, 6f)
+            }
+        }
+
+        // Peeps and moving vehicles
         engine.peeps.values.forEach { peep ->
             tmp.set(peep.position.x * CS + CS / 2f, TERRAIN_H + PEEP_H, peep.position.y * CS + CS / 2f)
             controller.camera.project(tmp)
             if (tmp.z in 0f..1f) {
-                overlayShapes.color = peepColor(peep)
-                overlayShapes.circle(tmp.x, tmp.y, PEEP_DOT, 8)
+                when (peep.travelMode) {
+                    TravelMode.Drive -> {
+                        overlayShapes.color = CAR_COLOR
+                        overlayShapes.rect(tmp.x - 6f, tmp.y - 4f, 12f, 8f)
+                    }
+                    TravelMode.Bike -> {
+                        overlayShapes.color = BIKE_COLOR
+                        overlayShapes.triangle(
+                            tmp.x, tmp.y + 5f,
+                            tmp.x - 4f, tmp.y - 4f,
+                            tmp.x + 4f, tmp.y - 4f
+                        )
+                    }
+                    else -> {
+                        overlayShapes.color = peepColor(peep)
+                        overlayShapes.circle(tmp.x, tmp.y, PEEP_DOT, 8)
+                    }
+                }
             }
         }
         overlayShapes.end()

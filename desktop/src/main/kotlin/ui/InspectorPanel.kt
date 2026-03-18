@@ -162,6 +162,8 @@ class InspectorPanel(private val engine: TickEngine, private val skin: Skin) {
         moneyLabel  = dynLabel("Money",  "$%.2f".format(p.money))
         homeLabel   = dynLabel("Home",   p.homeId?.let { "bldg$it" } ?: "EVICTED")
         dynLabel("Job", p.jobId?.let { "bldg$it" } ?: "none")
+        dynLabel("Vehicle", p.vehicle?.name ?: "none")
+        dynLabel("Travel", p.travelMode.name)
         friendsLabel = dynLabel("Friends", formatFriends(p))
 
         t.add().colspan(2).height(4f); t.row()

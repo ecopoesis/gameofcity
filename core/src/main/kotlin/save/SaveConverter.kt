@@ -85,7 +85,8 @@ object SaveConverter {
             minute = engine.clock.minute
         )
 
-        return SaveData(tick = engine.tick, clock = clockData, map = MapData(map.width, map.height, cells, buildings), peeps = peeps)
+        val parkedVehicles = map.parkedVehicles.keys.map { CoordData(it.x, it.y, it.z) }
+        return SaveData(tick = engine.tick, clock = clockData, map = MapData(map.width, map.height, cells, buildings, parkedVehicles), peeps = peeps)
     }
 
     fun fromSaveData(data: SaveData): TickEngine {
@@ -179,6 +180,9 @@ object SaveConverter {
                 parkingSpot = parkingSpot
             )
             engine.addPeep(peep)
+            if (parkingSpot != null) {
+                map.parkedVehicles[parkingSpot] = peep.id
+            }
         }
 
         return engine
