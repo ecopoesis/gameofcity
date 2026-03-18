@@ -81,7 +81,7 @@ class NavigationHelper {
         upcomingLegs.clear()
 
         // Car trip with parked car
-        if (peep.vehicle == VehicleType.Car && peep.parkingSpot != null && from.distanceTo(to) > 10) {
+        if (peep.vehicle == VehicleType.Car && peep.parkingSpot != null && from.distanceTo(to) > 30) {
             val carPos = peep.parkingSpot!!
             val parkingNearDest = findNearbyParking(to, map)
 
@@ -96,7 +96,7 @@ class NavigationHelper {
         }
 
         // Bike trip
-        if (peep.vehicle == VehicleType.Bike && from.distanceTo(to) > 5) {
+        if (peep.vehicle == VehicleType.Bike && from.distanceTo(to) > 10) {
             // Bike directly on roads, then walk the last bit
             return navigateTo(from, to, pf, TravelMode.Bike, terminal)
         }

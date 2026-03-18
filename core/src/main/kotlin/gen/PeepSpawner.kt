@@ -8,6 +8,8 @@ import tick.TickEngine
 import world.BuildingSubtype
 import world.BuildingType
 import world.CellCoord
+import world.Terrain
+import world.VehicleType
 
 object PeepSpawner {
 
@@ -38,6 +40,21 @@ object PeepSpawner {
                 else -> ScheduleType.Worker
             }
 
+            // Vary starting money: mix of wealthy, middle, and poor
+            val money = when (i % 5) {
+                0 -> 400f    // wealthy — can afford car
+                1, 2 -> 200f // middle — can afford bike
+                else -> 50f  // lower income — walks
+            }
+
+            // Vehicle ownership based on money
+            val vehicle = assignVehicle(money)
+
+            // Find initial parking spot for car owners
+            val parkingSpot = if (vehicle == VehicleType.Car) {
+                findInitialParking(startPos, engine)
+            } else null
+
             val peep = Peep(
                 id = i,
                 name = "${NAMES[i % NAMES.size]} ${i / NAMES.size + 1}".trimEnd('1').trimEnd(),
@@ -47,9 +64,46 @@ object PeepSpawner {
                 homeId = home?.id,
                 jobId = job?.id,
                 brain = UtilityBrain(),
-                schedule = sched
+                schedule = sched,
+                money = money,
+                vehicle = vehicle,
+                parkingSpot = parkingSpot
             )
+
+            // Register parked vehicle
+            if (parkingSpot != null) {
+                engine.map.parkedVehicles[parkingSpot] = peep.id
+            }
+
             engine.addPeep(peep)
         }
+    }
+
+    /** Assign vehicle type based on wealth. */
+    fun assignVehicle(money: Float): VehicleType? = when {
+        money > 300f -> VehicleType.Car
+        money > 100f -> VehicleType.Bike
+        else -> null
+    }
+
+    /** Find a nearby Parking terrain cell for initial car placement. */
+    fun findInitialParking(near: CellCoord, engine: TickEngine): CellCoord? {
+        val map = engine.map
+        var best: CellCoord? = null
+        var bestDist = Int.MAX_VALUE
+        for (dx in -20..20) {
+            for (dy in -20..20) {
+                val c = CellCoord(near.x + dx, near.y + dy)
+                val cell = map.getCell(c) ?: continue
+                if (cell.terrain == Terrain.Parking && c !in map.parkedVehicles) {
+                    val dist = c.distanceTo(near)
+                    if (dist < bestDist) {
+                        bestDist = dist
+                        best = c
+                    }
+                }
+            }
+        }
+        return best
     }
 }

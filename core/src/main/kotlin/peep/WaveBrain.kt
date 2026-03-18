@@ -69,9 +69,9 @@ class WaveBrain : Brain {
 
         val top3 = candidates.sortedByDescending { it.score }.take(3)
         val chosen = weightedRandomSelect(top3)
-        return nav.navigateTo(
+        return nav.planTrip(
             peep.position, chosen.candidate.building.cells.first(),
-            pf, chosen.candidate.action
+            world.map, pf, peep, chosen.candidate.action
         )
     }
 
@@ -79,7 +79,7 @@ class WaveBrain : Brain {
         if (peep.homeId != null) {
             val home = world.map.buildings[peep.homeId!!]
             if (home != null) {
-                return nav.navigateTo(peep.position, home.cells.first(), pf, Action.Sleep(home.id))
+                return nav.planTrip(peep.position, home.cells.first(), world.map, pf, peep, Action.Sleep(home.id))
             }
         }
         return Action.Idle

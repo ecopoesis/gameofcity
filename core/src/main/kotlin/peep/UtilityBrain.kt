@@ -20,7 +20,7 @@ class UtilityBrain : Brain {
         if (peep.needs.hunger > 0.6f) {
             val shop = world.map.buildingsOfType(BuildingType.Commercial).firstOrNull()
             if (shop != null) {
-                return nav.navigateTo(peep.position, shop.cells.first(), pf, Action.Eat(shop.id))
+                return nav.planTrip(peep.position, shop.cells.first(), world.map, pf, peep, Action.Eat(shop.id))
             }
         }
 
@@ -28,7 +28,7 @@ class UtilityBrain : Brain {
         if (sched.isMealTime(hour) && peep.needs.hunger > 0.3f) {
             val shop = world.map.buildingsOfType(BuildingType.Commercial).firstOrNull()
             if (shop != null) {
-                return nav.navigateTo(peep.position, shop.cells.first(), pf, Action.Eat(shop.id))
+                return nav.planTrip(peep.position, shop.cells.first(), world.map, pf, peep, Action.Eat(shop.id))
             }
         }
 
@@ -37,14 +37,14 @@ class UtilityBrain : Brain {
             if (peep.homeId != null) {
                 val home = world.map.buildings[peep.homeId!!]
                 if (home != null) {
-                    return nav.navigateTo(peep.position, home.cells.first(), pf, Action.Sleep(home.id))
+                    return nav.planTrip(peep.position, home.cells.first(), world.map, pf, peep, Action.Sleep(home.id))
                 }
             }
             // Homeless but tired: sleep at park
             if (peep.needs.sleep > 0.5f) {
                 val candidate = NeedActionMapper.findAction(NeedType.Sleep, peep, world.map)
                 if (candidate != null) {
-                    return nav.navigateTo(peep.position, candidate.building.cells.first(), pf, candidate.action)
+                    return nav.planTrip(peep.position, candidate.building.cells.first(), world.map, pf, peep, candidate.action)
                 }
             }
         }
@@ -53,7 +53,7 @@ class UtilityBrain : Brain {
         if (peep.needs.sleep > 0.8f && peep.homeId != null) {
             val home = world.map.buildings[peep.homeId!!]
             if (home != null) {
-                return nav.navigateTo(peep.position, home.cells.first(), pf, Action.Sleep(home.id))
+                return nav.planTrip(peep.position, home.cells.first(), world.map, pf, peep, Action.Sleep(home.id))
             }
         }
 
@@ -61,7 +61,7 @@ class UtilityBrain : Brain {
         if (sched.isWorkTime(hour) && peep.jobId != null) {
             val job = world.map.buildings[peep.jobId!!]
             if (job != null) {
-                return nav.navigateTo(peep.position, job.cells.first(), pf, Action.Work(job.id))
+                return nav.planTrip(peep.position, job.cells.first(), world.map, pf, peep, Action.Work(job.id))
             }
         }
 
@@ -70,7 +70,7 @@ class UtilityBrain : Brain {
         if (topNeed != null && topNeed.second > 0.3f) {
             val candidate = NeedActionMapper.findAction(topNeed.first, peep, world.map)
             if (candidate != null) {
-                return nav.navigateTo(peep.position, candidate.building.cells.first(), pf, candidate.action)
+                return nav.planTrip(peep.position, candidate.building.cells.first(), world.map, pf, peep, candidate.action)
             }
         }
 
@@ -78,7 +78,7 @@ class UtilityBrain : Brain {
         if (peep.homeId != null) {
             val home = world.map.buildings[peep.homeId!!]
             if (home != null) {
-                return nav.navigateTo(peep.position, home.cells.first(), pf, Action.Sleep(home.id))
+                return nav.planTrip(peep.position, home.cells.first(), world.map, pf, peep, Action.Sleep(home.id))
             }
         }
 

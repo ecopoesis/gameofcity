@@ -12,6 +12,7 @@ import peep.RelationshipTier
 import peep.ScheduleType
 import peep.UtilityBrain
 import peep.WorldView
+import gen.PeepSpawner
 import world.BuildingSubtype
 import world.CellCoord
 import world.Weather
@@ -616,6 +617,11 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                     val home = map.buildings.values.firstOrNull { it.isResidential && !it.isFull }
                     val pos = home?.cells?.firstOrNull() ?: map.buildings.values.firstOrNull()?.cells?.firstOrNull() ?: CellCoord(1, 1)
                     val id = nextPeepId++
+                    val immigrantMoney = 150f
+                    val vehicle = PeepSpawner.assignVehicle(immigrantMoney)
+                    val parkingSpot = if (vehicle == world.VehicleType.Car) {
+                        PeepSpawner.findInitialParking(pos, this)
+                    } else null
                     val immigrant = Peep(
                         id = id,
                         name = NAMES[id % NAMES.size],
@@ -624,10 +630,15 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                         position = pos,
                         homeId = home?.id,
                         jobId = job?.id,
-                        money = 150f,
+                        money = immigrantMoney,
                         brain = UtilityBrain(),
-                        schedule = ScheduleType.Worker
+                        schedule = ScheduleType.Worker,
+                        vehicle = vehicle,
+                        parkingSpot = parkingSpot
                     )
+                    if (parkingSpot != null) {
+                        map.parkedVehicles[parkingSpot] = id
+                    }
                     addPeep(immigrant)
                     eventLog.add(SimEvent(tick, clock.day, EventType.Immigration,
                         "Newcomer ${immigrant.name} arrived in the city", listOf(id)))
