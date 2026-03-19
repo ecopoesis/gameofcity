@@ -125,6 +125,15 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             map.peepsAt.getOrPut(newPos) { mutableListOf() }.add(peepId)
         }
 
+        // Advance trains and update riding peep positions
+        val trainPositions = transit.advanceTrains()
+        trainPositions.forEach { (peepId, newPos) ->
+            val peep = peeps[peepId] ?: return@forEach
+            map.peepsAt[peep.position]?.remove(peepId)
+            peep.position = newPos
+            map.peepsAt.getOrPut(newPos) { mutableListOf() }.add(peepId)
+        }
+
         weather.advance()
         clock.advance()
         tick++
@@ -257,6 +266,16 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
             }
             is Action.RideBus -> {
                 // Peep is riding — position updated by TransitSystem.advance()
+            }
+            is Action.WaitForTrain -> {
+                val train = transit.boardTrain(peep.id, action.stationId)
+                if (train != null) {
+                    peep.travelMode = TravelMode.Train
+                    peep.ridingTrainId = train.id
+                }
+            }
+            is Action.RideTrain -> {
+                // Peep is riding — position updated by TransitSystem.advanceTrains()
             }
             is Action.Idle -> Unit
         }

@@ -36,6 +36,10 @@ enum class BuildingSubtype(val category: BuildingType, val capacityMultiplier: I
     // Parking
     ParkingLot(BuildingType.Commercial, 20),
     ParkingGarage(BuildingType.Commercial, 40),
+    // Transit
+    TrainStation(BuildingType.Civic, 6),
+    SubwayStation(BuildingType.Civic, 6),
+    BusDepot(BuildingType.Civic, 4),
     // Recreation
     Park(BuildingType.Recreation, 10),
     Gym(BuildingType.Recreation, 3),
@@ -123,6 +127,9 @@ val BuildingSubtype.stories: Int get() = when (this) {
     BuildingSubtype.FireStation -> 1
     BuildingSubtype.ParkingLot -> 1
     BuildingSubtype.ParkingGarage -> 3
+    BuildingSubtype.TrainStation -> 2
+    BuildingSubtype.SubwayStation -> 2
+    BuildingSubtype.BusDepot -> 1
     BuildingSubtype.Park -> 1
     BuildingSubtype.Gym -> 2
     BuildingSubtype.Theater -> 3
@@ -144,5 +151,8 @@ val BuildingSubtype.baseWage: Int get() = when (this) {
     BuildingSubtype.GroceryStore -> 6
     BuildingSubtype.PoliceStation -> 16
     BuildingSubtype.FireStation -> 16
+    BuildingSubtype.TrainStation -> 12
+    BuildingSubtype.SubwayStation -> 12
+    BuildingSubtype.BusDepot -> 10
     else -> 0
 }

@@ -155,6 +155,7 @@ class GameOfCityApp : ApplicationAdapter() {
             val map = CityGenerator.generate(config)
             val newEngine = TickEngine(map)
             CityGenerator.generateTransit(map, newEngine.transit)
+            CityGenerator.generateRail(map, newEngine.transit)
             PeepSpawner.spawn(newEngine, config.peepCount)
             println("[CityGen] Spawned ${config.peepCount} peeps in ${map.buildings.size} buildings")
             rebuildForEngine(newEngine)

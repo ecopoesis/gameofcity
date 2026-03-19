@@ -39,6 +39,7 @@ val Terrain.speedLimit: Int get() = when (this) {
     Terrain.RuralRoad -> 1
     Terrain.BusLane -> 3
     Terrain.Parking -> 1
+    Terrain.RailTrack -> 4
     else -> 0
 }
 

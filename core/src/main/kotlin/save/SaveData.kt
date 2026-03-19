@@ -11,7 +11,7 @@ data class ClockData(
 
 @Serializable
 data class SaveData(
-    val version: Int = 6,
+    val version: Int = 7,
     val tick: Long,
     val clock: ClockData? = null,
     val map: MapData,
@@ -23,7 +23,10 @@ data class SaveData(
 data class TransitData(
     val stops: List<BusStopData> = emptyList(),
     val routes: List<BusRouteData> = emptyList(),
-    val buses: List<BusData> = emptyList()
+    val buses: List<BusData> = emptyList(),
+    val stations: List<TrainStationData> = emptyList(),
+    val trainRoutes: List<TrainRouteData> = emptyList(),
+    val trains: List<TrainData> = emptyList()
 )
 
 @Serializable
@@ -49,6 +52,35 @@ data class BusData(
     val x: Int,
     val y: Int,
     val currentStopIndex: Int,
+    val movingForward: Boolean = true,
+    val passengers: List<Int> = emptyList()
+)
+
+@Serializable
+data class TrainStationData(
+    val id: Int,
+    val x: Int,
+    val y: Int,
+    val name: String,
+    val isSubway: Boolean = false
+)
+
+@Serializable
+data class TrainRouteData(
+    val id: Int,
+    val name: String,
+    val stationIds: List<Int>,
+    val headwayTicks: Int = 200,
+    val isSubway: Boolean = false
+)
+
+@Serializable
+data class TrainData(
+    val id: Int,
+    val routeId: Int,
+    val x: Int,
+    val y: Int,
+    val currentStationIndex: Int,
     val movingForward: Boolean = true,
     val passengers: List<Int> = emptyList()
 )

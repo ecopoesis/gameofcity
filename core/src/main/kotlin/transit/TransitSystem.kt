@@ -9,7 +9,12 @@ class TransitSystem {
     val routes: MutableMap<Int, BusRoute> = mutableMapOf()
     val buses: MutableMap<Int, Bus> = mutableMapOf()
 
+    val stations: MutableMap<Int, TrainStation> = mutableMapOf()
+    val trainRoutes: MutableMap<Int, TrainRoute> = mutableMapOf()
+    val trains: MutableMap<Int, Train> = mutableMapOf()
+
     private var nextBusId = 0
+    private var nextTrainId = 0
 
     fun addStop(stop: BusStop) {
         stops[stop.id] = stop
@@ -28,9 +33,30 @@ class TransitSystem {
         }
     }
 
+    fun addStation(station: TrainStation) {
+        stations[station.id] = station
+    }
+
+    fun addTrainRoute(route: TrainRoute) {
+        trainRoutes[route.id] = route
+        if (route.stations.size >= 2) {
+            val train = Train(
+                id = nextTrainId++,
+                routeId = route.id,
+                position = route.stations[0].coord
+            )
+            trains[train.id] = train
+        }
+    }
+
     /** Find nearest bus stop to a given coordinate. */
     fun nearestStop(coord: CellCoord): BusStop? {
         return stops.values.minByOrNull { it.coord.distanceTo(coord) }
+    }
+
+    /** Find nearest train station to a given coordinate. */
+    fun nearestStation(coord: CellCoord): TrainStation? {
+        return stations.values.minByOrNull { it.coord.distanceTo(coord) }
     }
 
     /** Find nearest stop to destination that is on a route serving the origin stop. */
@@ -55,6 +81,30 @@ class TransitSystem {
         }
 
         return if (bestRoute != null && bestDestStop != null) bestRoute to bestDestStop else null
+    }
+
+    /** Find best train route from origin station to destination coord. */
+    fun findBestTrainRoute(originStation: TrainStation, destCoord: CellCoord): Pair<TrainRoute, TrainStation>? {
+        var bestRoute: TrainRoute? = null
+        var bestDestStation: TrainStation? = null
+        var bestDist = Int.MAX_VALUE
+
+        for (route in trainRoutes.values) {
+            val routeStationIds = route.stations.map { it.id }.toSet()
+            if (originStation.id !in routeStationIds) continue
+
+            for (station in route.stations) {
+                if (station.id == originStation.id) continue
+                val dist = station.coord.distanceTo(destCoord)
+                if (dist < bestDist) {
+                    bestDist = dist
+                    bestRoute = route
+                    bestDestStation = station
+                }
+            }
+        }
+
+        return if (bestRoute != null && bestDestStation != null) bestRoute to bestDestStation else null
     }
 
     /** Advance all buses one tick. Returns map of peepId -> new position for riding peeps. */
@@ -98,6 +148,45 @@ class TransitSystem {
         return peepPositions
     }
 
+    /** Advance all trains one tick. Returns map of peepId -> new position for riding peeps. */
+    fun advanceTrains(): Map<PeepId, CellCoord> {
+        val peepPositions = mutableMapOf<PeepId, CellCoord>()
+
+        for (train in trains.values) {
+            val route = trainRoutes[train.routeId] ?: continue
+            if (route.stations.size < 2) continue
+
+            if (train.ticksAtStation > 0) {
+                train.ticksAtStation--
+                train.passengers.forEach { peepPositions[it] = train.position }
+                continue
+            }
+
+            // Move to next station
+            if (train.movingForward) {
+                train.currentStationIndex++
+                if (train.currentStationIndex >= route.stations.size) {
+                    train.currentStationIndex = route.stations.size - 2
+                    train.movingForward = false
+                }
+            } else {
+                train.currentStationIndex--
+                if (train.currentStationIndex < 0) {
+                    train.currentStationIndex = 1
+                    train.movingForward = true
+                }
+            }
+
+            val nextStation = route.stations[train.currentStationIndex]
+            train.position = nextStation.coord
+            train.ticksAtStation = Train.DWELL_TICKS
+
+            train.passengers.forEach { peepPositions[it] = train.position }
+        }
+
+        return peepPositions
+    }
+
     /** Board a peep onto a bus at the given stop. Returns the bus if boarding succeeded. */
     fun boardBus(peepId: PeepId, stopId: Int): Bus? {
         val stop = stops[stopId] ?: return null
@@ -126,6 +215,36 @@ class TransitSystem {
             val route = routes[bus.routeId] ?: return@firstOrNull false
             val currentStop = route.stops.getOrNull(bus.currentStopIndex)
             currentStop?.id == stopId && bus.ticksAtStop > 0
+        }
+    }
+
+    /** Board a peep onto a train at the given station. Returns the train if boarding succeeded. */
+    fun boardTrain(peepId: PeepId, stationId: Int): Train? {
+        stations[stationId] ?: return null
+        val train = trains.values.firstOrNull { train ->
+            val route = trainRoutes[train.routeId] ?: return@firstOrNull false
+            val currentStation = route.stations.getOrNull(train.currentStationIndex)
+            currentStation?.id == stationId && train.ticksAtStation > 0
+        }
+        if (train != null) {
+            train.passengers.add(peepId)
+        }
+        return train
+    }
+
+    /** Remove a peep from their train. */
+    fun alightTrain(peepId: PeepId) {
+        for (train in trains.values) {
+            train.passengers.remove(peepId)
+        }
+    }
+
+    /** Check if a train is currently at the given station. */
+    fun trainAtStation(stationId: Int): Train? {
+        return trains.values.firstOrNull { train ->
+            val route = trainRoutes[train.routeId] ?: return@firstOrNull false
+            val currentStation = route.stations.getOrNull(train.currentStationIndex)
+            currentStation?.id == stationId && train.ticksAtStation > 0
         }
     }
 }

@@ -2,10 +2,7 @@ package save
 
 import peep.*
 import tick.TickEngine
-import transit.Bus
-import transit.BusRoute
-import transit.BusStop
-import transit.TransitSystem
+import transit.*
 import world.*
 
 object SaveConverter {
@@ -95,7 +92,10 @@ object SaveConverter {
         val transitData = TransitData(
             stops = engine.transit.stops.values.map { BusStopData(it.id, it.coord.x, it.coord.y, it.name) },
             routes = engine.transit.routes.values.map { BusRouteData(it.id, it.name, it.stops.map { s -> s.id }, it.headwayTicks) },
-            buses = engine.transit.buses.values.map { BusData(it.id, it.routeId, it.position.x, it.position.y, it.currentStopIndex, it.movingForward, it.passengers.toList()) }
+            buses = engine.transit.buses.values.map { BusData(it.id, it.routeId, it.position.x, it.position.y, it.currentStopIndex, it.movingForward, it.passengers.toList()) },
+            stations = engine.transit.stations.values.map { TrainStationData(it.id, it.coord.x, it.coord.y, it.name, it.isSubway) },
+            trainRoutes = engine.transit.trainRoutes.values.map { TrainRouteData(it.id, it.name, it.stations.map { s -> s.id }, it.headwayTicks, it.isSubway) },
+            trains = engine.transit.trains.values.map { TrainData(it.id, it.routeId, it.position.x, it.position.y, it.currentStationIndex, it.movingForward, it.passengers.toList()) }
         )
 
         return SaveData(tick = engine.tick, clock = clockData, map = MapData(map.width, map.height, cells, buildings, parkedVehicles), peeps = peeps, transit = transitData)
@@ -215,6 +215,24 @@ object SaveConverter {
             for (bd in td.buses) {
                 val bus = Bus(bd.id, bd.routeId, CellCoord(bd.x, bd.y), bd.currentStopIndex, bd.passengers.toMutableList(), 0, bd.movingForward)
                 engine.transit.buses[bus.id] = bus
+            }
+
+            // Restore train data
+            val stationsById = mutableMapOf<Int, TrainStation>()
+            for (sd in td.stations) {
+                val station = TrainStation(sd.id, CellCoord(sd.x, sd.y), sd.name, sd.isSubway)
+                stationsById[station.id] = station
+                engine.transit.addStation(station)
+            }
+            for (rd in td.trainRoutes) {
+                val routeStations = rd.stationIds.mapNotNull { stationsById[it] }
+                if (routeStations.size >= 2) {
+                    engine.transit.addTrainRoute(TrainRoute(rd.id, rd.name, routeStations, rd.headwayTicks, rd.isSubway))
+                }
+            }
+            for (td2 in td.trains) {
+                val train = Train(td2.id, td2.routeId, CellCoord(td2.x, td2.y), td2.currentStationIndex, td2.passengers.toMutableList(), 0, td2.movingForward)
+                engine.transit.trains[train.id] = train
             }
         }
 

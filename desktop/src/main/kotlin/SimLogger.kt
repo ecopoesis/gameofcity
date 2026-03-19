@@ -88,6 +88,8 @@ object SimLogger {
         is Action.RetrieveCar -> "RetrieveCar(${a.spot.x},${a.spot.y})"
         is Action.WaitForBus -> "WaitForBus(stop${a.stopId})"
         is Action.RideBus   -> "RideBus(bus${a.busId})"
+        is Action.WaitForTrain -> "WaitForTrain(stn${a.stationId})"
+        is Action.RideTrain -> "RideTrain(train${a.trainId})"
         Action.Idle         -> "Idle"
     }
 }

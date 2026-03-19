@@ -51,6 +51,9 @@ const BUILDING_COLORS = {
     FireStation:     new THREE.Color(0.85, 0.25, 0.20),
     ParkingLot:      new THREE.Color(0.50, 0.50, 0.55),
     ParkingGarage:   new THREE.Color(0.45, 0.45, 0.50),
+    TrainStation:    new THREE.Color(0.20, 0.45, 0.75),
+    SubwayStation:   new THREE.Color(0.55, 0.30, 0.60),
+    BusDepot:        new THREE.Color(0.80, 0.65, 0.15),
     // Category fallbacks
     Residential:     new THREE.Color(0.80, 0.50, 0.20),
     Commercial:      new THREE.Color(0.20, 0.50, 0.90),
@@ -68,6 +71,7 @@ const BUILDING_HEIGHTS = {
     Hospital: 64, School: 48, Library: 36, CommunityCenter: 40,
     Park: 4, Gym: 32, Theater: 56, Stadium: 80, Museum: 48,
     PoliceStation: 40, FireStation: 36, ParkingLot: 8, ParkingGarage: 48,
+    TrainStation: 44, SubwayStation: 32, BusDepot: 28,
     // Category fallbacks
     Residential: 64, Commercial: 48, Industrial: 32,
     Civic: 48, Recreation: 32, Entertainment: 96,
@@ -132,6 +136,8 @@ let bikeMesh = null;
 let parkedCarMesh = null;
 let busMesh = null;
 let busData = [];
+let trainMesh = null;
+let trainData = [];
 let peepData = [];
 let prevPeepData = [];
 let lastPeepTime = 0;
@@ -389,6 +395,32 @@ function updateBuses() {
         busMesh.setMatrixAt(i, hideMatrix);
     }
     busMesh.instanceMatrix.needsUpdate = true;
+}
+
+function updateTrains() {
+    if (trainData.length === 0) {
+        if (trainMesh) { scene.remove(trainMesh); trainMesh = null; }
+        return;
+    }
+    if (!trainMesh || trainData.length > trainMesh.count) {
+        if (trainMesh) scene.remove(trainMesh);
+        const geo = new THREE.BoxGeometry(24, 8, 10);
+        const mat = new THREE.MeshPhongMaterial({ color: new THREE.Color(0.20, 0.45, 0.85), emissive: 0x081533 });
+        trainMesh = new THREE.InstancedMesh(geo, mat, trainData.length);
+        trainMesh.frustumCulled = false;
+        scene.add(trainMesh);
+    }
+    const matrix = new THREE.Matrix4();
+    for (let i = 0; i < trainData.length; i++) {
+        const t = trainData[i];
+        matrix.setPosition(t.x * CS + CS / 2, TERRAIN_H + PEEP_H + 6, t.y * CS + CS / 2);
+        trainMesh.setMatrixAt(i, matrix);
+    }
+    const hideMatrix = new THREE.Matrix4().setPosition(0, -1000, 0);
+    for (let i = trainData.length; i < trainMesh.count; i++) {
+        trainMesh.setMatrixAt(i, hideMatrix);
+    }
+    trainMesh.instanceMatrix.needsUpdate = true;
 }
 
 function updatePeeps(interpolate) {
@@ -708,6 +740,11 @@ function connect() {
             if (msg.data.transit && msg.data.transit.buses) {
                 busData = msg.data.transit.buses.map(b => ({ x: b.x, y: b.y }));
                 updateBuses();
+            }
+            // Update trains from snapshot
+            if (msg.data.transit && msg.data.transit.trains) {
+                trainData = msg.data.transit.trains.map(t => ({ x: t.x, y: t.y }));
+                updateTrains();
             }
             prevPeepData = peepData;
             peepData = msg.data.peeps.map(p => ({

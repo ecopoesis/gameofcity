@@ -81,7 +81,10 @@ class CityRenderer(
             BuildingSubtype.PoliceStation to 40f,
             BuildingSubtype.FireStation to 36f,
             BuildingSubtype.ParkingLot to 8f,
-            BuildingSubtype.ParkingGarage to 48f
+            BuildingSubtype.ParkingGarage to 48f,
+            BuildingSubtype.TrainStation to 44f,
+            BuildingSubtype.SubwayStation to 32f,
+            BuildingSubtype.BusDepot to 28f
         )
 
         val CATEGORY_HEIGHTS = mapOf(
@@ -117,7 +120,10 @@ class CityRenderer(
             BuildingSubtype.PoliceStation to Color(0.30f, 0.40f, 0.80f, 1f),
             BuildingSubtype.FireStation to Color(0.85f, 0.25f, 0.20f, 1f),
             BuildingSubtype.ParkingLot to Color(0.50f, 0.50f, 0.55f, 1f),
-            BuildingSubtype.ParkingGarage to Color(0.45f, 0.45f, 0.50f, 1f)
+            BuildingSubtype.ParkingGarage to Color(0.45f, 0.45f, 0.50f, 1f),
+            BuildingSubtype.TrainStation to Color(0.20f, 0.45f, 0.75f, 1f),
+            BuildingSubtype.SubwayStation to Color(0.55f, 0.30f, 0.60f, 1f),
+            BuildingSubtype.BusDepot to Color(0.80f, 0.65f, 0.15f, 1f)
         )
 
         val CATEGORY_COLORS = mapOf(
@@ -151,6 +157,7 @@ class CityRenderer(
         val BIKE_COLOR = Color(0.20f, 0.75f, 0.30f, 1f)
         val PARKED_CAR_COLOR = Color(0.60f, 0.15f, 0.15f, 1f)
         val BUS_COLOR = Color(0.95f, 0.75f, 0.10f, 1f)
+        val TRAIN_COLOR = Color(0.20f, 0.45f, 0.85f, 1f)
 
         val NEED_COLORS = mapOf(
             NeedType.Hunger to Color(1f, 0.3f, 0.3f, 1f),
@@ -279,6 +286,16 @@ class CityRenderer(
             if (tmp.z in 0f..1f) {
                 overlayShapes.color = BUS_COLOR
                 overlayShapes.rect(tmp.x - 8f, tmp.y - 5f, 16f, 10f)
+            }
+        }
+
+        // Trains
+        engine.transit.trains.values.forEach { train ->
+            tmp.set(train.position.x * CS + CS / 2f, TERRAIN_H + PEEP_H + 6f, train.position.y * CS + CS / 2f)
+            controller.camera.project(tmp)
+            if (tmp.z in 0f..1f) {
+                overlayShapes.color = TRAIN_COLOR
+                overlayShapes.rect(tmp.x - 12f, tmp.y - 5f, 24f, 10f)
             }
         }
 

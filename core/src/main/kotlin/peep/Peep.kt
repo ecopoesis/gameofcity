@@ -31,7 +31,9 @@ data class Peep(
     var travelMode: TravelMode = TravelMode.Walk,
     var parkingSpot: CellCoord? = null,
     var ridingBusId: Int? = null,
-    var alightAtStopId: Int? = null
+    var alightAtStopId: Int? = null,
+    var ridingTrainId: Int? = null,
+    var alightAtStationId: Int? = null
 ) {
     val isHomeless: Boolean get() = homeId == null
     val isPartnered: Boolean get() = partnerId != null

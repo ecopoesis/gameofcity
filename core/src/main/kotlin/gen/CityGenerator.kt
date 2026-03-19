@@ -1,8 +1,6 @@
 package gen
 
-import transit.BusRoute
-import transit.BusStop
-import transit.TransitSystem
+import transit.*
 import world.*
 import kotlin.random.Random
 
@@ -367,7 +365,7 @@ object CityGenerator {
     }
 
     private fun assignSubtype(type: BuildingType, blockArea: Int, rng: Random): BuildingSubtype {
-        val subtypes = BuildingSubtype.entries.filter { it.category == type }
+        val subtypes = BuildingSubtype.entries.filter { it.category == type && it !in TRANSIT_SUBTYPES }
         if (subtypes.isEmpty()) return BuildingSubtype.House
 
         val sizeFiltered = when {
@@ -539,6 +537,11 @@ object CityGenerator {
         BuildingSubtype.Library, BuildingSubtype.GroceryStore
     )
 
+    // Exclude transit subtypes from random building generation
+    private val TRANSIT_SUBTYPES = setOf(
+        BuildingSubtype.TrainStation, BuildingSubtype.SubwayStation, BuildingSubtype.BusDepot
+    )
+
     /** Generate bus stops and routes for an existing map. */
     fun generateTransit(map: WorldMap, transit: TransitSystem, rng: Random = Random) {
         val stopInterval = 50 // place stops every ~50 cells along arterial/collector roads
@@ -601,6 +604,269 @@ object CityGenerator {
                     adj != null && adj.terrain == Terrain.Sidewalk && adj.buildingId == null
                 }
                 if (sidewalk != null) return sidewalk
+            }
+        }
+        return null
+    }
+
+    /** Generate train stations, rail tracks, and train routes for an existing map. */
+    fun generateRail(map: WorldMap, transit: TransitSystem, rng: Random = Random) {
+        val stationInterval = 80 // place stations every ~80 cells along arterial roads
+        val stationList = mutableListOf<TrainStation>()
+        var nextStationId = 0
+        var nextBuildingId = (map.buildings.keys.maxOrNull() ?: 0) + 1
+
+        // Place surface train stations along arterial roads
+        for (x in stationInterval / 2 until map.width step stationInterval) {
+            for (y in stationInterval / 2 until map.height step stationInterval) {
+                val location = findTrainStationLocation(map, x, y)
+                if (location != null) {
+                    val (stationCoord, trackCoord) = location
+                    val station = TrainStation(nextStationId++, stationCoord, "Station ${stationList.size + 1}")
+                    stationList.add(station)
+                    transit.addStation(station)
+
+                    // Place Platform terrain at the station
+                    map.setCell(Cell(stationCoord, Terrain.Platform))
+
+                    // Place a TrainStation building
+                    val bldgCells = mutableSetOf(stationCoord)
+                    // Add adjacent sidewalk cell if available
+                    val adj = listOf(
+                        CellCoord(stationCoord.x - 1, stationCoord.y),
+                        CellCoord(stationCoord.x + 1, stationCoord.y),
+                        CellCoord(stationCoord.x, stationCoord.y - 1),
+                        CellCoord(stationCoord.x, stationCoord.y + 1)
+                    )
+                    val extraCell = adj.firstOrNull { c ->
+                        val cell = map.getCell(c)
+                        cell != null && cell.terrain == Terrain.Sidewalk && cell.buildingId == null
+                    }
+                    if (extraCell != null) bldgCells.add(extraCell)
+
+                    map.addBuilding(Building(
+                        id = nextBuildingId++,
+                        type = BuildingType.Civic,
+                        subtype = BuildingSubtype.TrainStation,
+                        cells = bldgCells
+                    ))
+
+                    // Lay RailTrack on the arterial road cell
+                    map.setCell(Cell(trackCoord, Terrain.RailTrack))
+                }
+            }
+        }
+
+        if (stationList.size < 2) return
+
+        // Place rail tracks connecting stations along arterial corridors
+        layRailTracks(map, stationList)
+
+        // Generate 1-2 train routes
+        val numRoutes = if (stationList.size >= 6) 2 else 1
+        val usedStations = mutableSetOf<Int>()
+
+        for (routeId in 0 until numRoutes) {
+            val routeStations = pickRouteStations(stationList, usedStations, rng)
+            if (routeStations.size < 2) continue
+
+            routeStations.forEach { usedStations.add(it.id) }
+            val route = TrainRoute(
+                id = routeId,
+                name = "Line ${routeId + 1}",
+                stations = routeStations,
+                headwayTicks = 200
+            )
+            transit.addTrainRoute(route)
+        }
+
+        // Generate subway if map is large enough (>= 150x150)
+        if (map.width >= 150 && map.height >= 150) {
+            generateSubway(map, transit, nextStationId, nextBuildingId, rng)
+        }
+    }
+
+    private fun findTrainStationLocation(map: WorldMap, centerX: Int, centerY: Int): Pair<CellCoord, CellCoord>? {
+        // Search for an arterial road cell with an adjacent sidewalk
+        for (dx in -15..15) {
+            for (dy in -15..15) {
+                val x = centerX + dx
+                val y = centerY + dy
+                val cell = map.getCell(CellCoord(x, y)) ?: continue
+                if (cell.terrain != Terrain.ArterialRoad) continue
+                if (cell.buildingId != null) continue
+
+                val candidates = listOf(
+                    CellCoord(x - 1, y), CellCoord(x + 1, y),
+                    CellCoord(x, y - 1), CellCoord(x, y + 1)
+                )
+                val sidewalk = candidates.firstOrNull { c ->
+                    val adj = map.getCell(c)
+                    adj != null && adj.terrain == Terrain.Sidewalk && adj.buildingId == null
+                }
+                if (sidewalk != null) {
+                    return sidewalk to CellCoord(x, y) // station on sidewalk, track on road
+                }
+            }
+        }
+        return null
+    }
+
+    /** Lay RailTrack terrain between connected stations along existing road corridors. */
+    private fun layRailTracks(map: WorldMap, stations: List<TrainStation>) {
+        if (stations.size < 2) return
+
+        // Sort stations by x then y for consistent track laying
+        val sorted = stations.sortedWith(compareBy({ it.coord.x }, { it.coord.y }))
+
+        for (i in 0 until sorted.size - 1) {
+            val from = sorted[i].coord
+            val to = sorted[i + 1].coord
+
+            // Lay tracks along the arterial road connecting stations
+            // First go horizontal, then vertical
+            val dx = if (to.x > from.x) 1 else if (to.x < from.x) -1 else 0
+            val dy = if (to.y > from.y) 1 else if (to.y < from.y) -1 else 0
+
+            // Horizontal segment
+            var cx = from.x
+            while (cx != to.x) {
+                cx += dx
+                val coord = CellCoord(cx, from.y)
+                val cell = map.getCell(coord)
+                if (cell != null && cell.terrain.isRoad && cell.buildingId == null) {
+                    map.setCell(Cell(coord, Terrain.RailTrack))
+                }
+            }
+            // Vertical segment
+            var cy = from.y
+            while (cy != to.y) {
+                cy += dy
+                val coord = CellCoord(to.x, cy)
+                val cell = map.getCell(coord)
+                if (cell != null && cell.terrain.isRoad && cell.buildingId == null) {
+                    map.setCell(Cell(coord, Terrain.RailTrack))
+                }
+            }
+        }
+    }
+
+    private fun pickRouteStations(allStations: List<TrainStation>, used: Set<Int>, rng: Random): List<TrainStation> {
+        val available = allStations.filter { it.id !in used }
+        val start = if (available.isNotEmpty()) available[rng.nextInt(available.size)] else allStations[rng.nextInt(allStations.size)]
+
+        val route = mutableListOf(start)
+        val visited = mutableSetOf(start.id)
+        val maxStations = (allStations.size / 2).coerceIn(3, 6)
+
+        repeat(maxStations - 1) {
+            val last = route.last()
+            val next = allStations
+                .filter { it.id !in visited }
+                .minByOrNull { it.coord.distanceTo(last.coord) }
+            if (next != null) {
+                route.add(next)
+                visited.add(next.id)
+            }
+        }
+
+        return route
+    }
+
+    /** Generate subway system at z=-1. */
+    private fun generateSubway(
+        map: WorldMap, transit: TransitSystem,
+        startStationId: Int, startBuildingId: Int,
+        rng: Random
+    ) {
+        var nextStationId = startStationId
+        var nextBuildingId = startBuildingId
+        val subwayStations = mutableListOf<TrainStation>()
+        val subwayInterval = 60
+
+        // Place subway stations at regular intervals
+        for (x in subwayInterval until map.width - subwayInterval step subwayInterval) {
+            for (y in subwayInterval until map.height - subwayInterval step subwayInterval) {
+                // Find a sidewalk cell for the surface entrance
+                val entrance = findSubwayEntrance(map, x, y) ?: continue
+
+                val station = TrainStation(nextStationId++, entrance, "Subway ${subwayStations.size + 1}", isSubway = true)
+                subwayStations.add(station)
+                transit.addStation(station)
+
+                // Place SubwayStation building at surface (z=0)
+                val bldgCells = mutableSetOf(entrance)
+                val adj = listOf(
+                    CellCoord(entrance.x - 1, entrance.y),
+                    CellCoord(entrance.x + 1, entrance.y),
+                    CellCoord(entrance.x, entrance.y - 1),
+                    CellCoord(entrance.x, entrance.y + 1)
+                )
+                val extraCell = adj.firstOrNull { c ->
+                    val cell = map.getCell(c)
+                    cell != null && cell.terrain == Terrain.Sidewalk && cell.buildingId == null
+                }
+                if (extraCell != null) bldgCells.add(extraCell)
+
+                map.addBuilding(Building(
+                    id = nextBuildingId++,
+                    type = BuildingType.Civic,
+                    subtype = BuildingSubtype.SubwayStation,
+                    cells = bldgCells
+                ))
+
+                // Place Platform at z=-1 below the entrance
+                val underground = CellCoord(entrance.x, entrance.y, -1)
+                map.setCell(Cell(underground, Terrain.Platform))
+            }
+        }
+
+        if (subwayStations.size < 2) return
+
+        // Lay underground rail tracks between subway stations (z=-1)
+        val sorted = subwayStations.sortedWith(compareBy({ it.coord.x }, { it.coord.y }))
+        for (i in 0 until sorted.size - 1) {
+            val from = sorted[i].coord
+            val to = sorted[i + 1].coord
+
+            val dx = if (to.x > from.x) 1 else if (to.x < from.x) -1 else 0
+            val dy = if (to.y > from.y) 1 else if (to.y < from.y) -1 else 0
+
+            var cx = from.x
+            while (cx != to.x) {
+                cx += dx
+                map.setCell(Cell(CellCoord(cx, from.y, -1), Terrain.RailTrack))
+            }
+            var cy = from.y
+            while (cy != to.y) {
+                cy += dy
+                map.setCell(Cell(CellCoord(to.x, cy, -1), Terrain.RailTrack))
+            }
+        }
+
+        // Generate 1 subway route connecting all subway stations
+        if (subwayStations.size >= 2) {
+            val routeId = transit.trainRoutes.size
+            val route = TrainRoute(
+                id = routeId,
+                name = "Subway",
+                stations = sorted,
+                headwayTicks = 150,
+                isSubway = true
+            )
+            transit.addTrainRoute(route)
+        }
+    }
+
+    private fun findSubwayEntrance(map: WorldMap, centerX: Int, centerY: Int): CellCoord? {
+        for (dx in -10..10) {
+            for (dy in -10..10) {
+                val x = centerX + dx
+                val y = centerY + dy
+                val cell = map.getCell(CellCoord(x, y)) ?: continue
+                if (cell.terrain == Terrain.Sidewalk && cell.buildingId == null) {
+                    return CellCoord(x, y)
+                }
             }
         }
         return null

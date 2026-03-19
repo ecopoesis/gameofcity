@@ -24,6 +24,32 @@ class NavigationHelper {
         _pathfinder ?: AStarPathfinder(map).also { _pathfinder = it }
 
     fun pendingAction(peep: Peep, world: WorldView): Action? {
+        // Currently riding a train — check if we should alight
+        if (peep.ridingTrainId != null) {
+            val train = world.transit.trains[peep.ridingTrainId]
+            if (train != null) {
+                val route = world.transit.trainRoutes[train.routeId]
+                val currentStation = route?.stations?.getOrNull(train.currentStationIndex)
+                if (currentStation != null && currentStation.id == peep.alightAtStationId && train.ticksAtStation > 0) {
+                    world.transit.alightTrain(peep.id)
+                    peep.ridingTrainId = null
+                    peep.travelMode = TravelMode.Walk
+                    peep.alightAtStationId = null
+                    if (upcomingLegs.isNotEmpty()) {
+                        val leg = upcomingLegs.removeFirst()
+                        val pf = _pathfinder ?: return Action.Idle
+                        return navigateTo(peep.position, leg.destination, pf, leg.mode, leg.terminal)
+                    }
+                    return Action.Idle
+                }
+            } else {
+                peep.ridingTrainId = null
+                peep.travelMode = TravelMode.Walk
+                peep.alightAtStationId = null
+            }
+            return Action.RideTrain(peep.ridingTrainId ?: return Action.Idle)
+        }
+
         // Currently riding a bus — check if we should alight
         if (peep.ridingBusId != null) {
             val bus = world.transit.buses[peep.ridingBusId]
@@ -101,7 +127,7 @@ class NavigationHelper {
      *
      * Car trip: walk to car -> drive to parking near dest -> park -> walk to dest.
      * Bike trip: bike on roads to near dest -> walk to dest.
-     * No vehicle: walk directly.
+     * No vehicle: walk directly (or use transit).
      */
     fun planTrip(
         from: CellCoord, to: CellCoord,
@@ -131,29 +157,66 @@ class NavigationHelper {
             return navigateTo(from, to, pf, TravelMode.Bike, terminal)
         }
 
-        // Bus trip: no car, distance > 20, transit system available
+        // Transit trip: no car, distance > 20, transit system available
         if (peep.vehicle != VehicleType.Car && transit != null && from.distanceTo(to) > 20) {
-            val originStop = transit.nearestStop(from)
-            if (originStop != null && originStop.coord.distanceTo(from) < 30) {
-                val routeInfo = transit.findBestRoute(originStop, to)
+            val transitAction = planTransitTrip(from, to, pf, peep, terminal, transit)
+            if (transitAction != null) return transitAction
+        }
+
+        // Default: walk directly
+        return navigateTo(from, to, pf, TravelMode.Walk, terminal)
+    }
+
+    /**
+     * Plan a transit trip (train preferred for long distance, bus as fallback).
+     * Returns null if no suitable transit route found.
+     */
+    private fun planTransitTrip(
+        from: CellCoord, to: CellCoord,
+        pf: AStarPathfinder, peep: Peep,
+        terminal: Action, transit: TransitSystem
+    ): Action? {
+        val distance = from.distanceTo(to)
+
+        // Try train first for longer distances (> 40 cells)
+        if (distance > 40 && transit.stations.isNotEmpty()) {
+            val originStation = transit.nearestStation(from)
+            if (originStation != null && originStation.coord.distanceTo(from) < 40) {
+                val routeInfo = transit.findBestTrainRoute(originStation, to)
                 if (routeInfo != null) {
-                    val (_, destStop) = routeInfo
-                    // Only use bus if it actually saves walking distance
-                    if (destStop.coord.distanceTo(to) < from.distanceTo(to) * 0.7) {
-                        peep.alightAtStopId = destStop.id
-                        // Leg 2: wait for bus at origin stop
-                        upcomingLegs.addLast(TripLeg(originStop.coord, null, Action.WaitForBus(originStop.id)))
-                        // Leg 3: walk from dest stop to destination
+                    val (_, destStation) = routeInfo
+                    if (destStation.coord.distanceTo(to) < distance * 0.7) {
+                        peep.alightAtStationId = destStation.id
+                        // Leg 2: wait for train at origin station
+                        upcomingLegs.addLast(TripLeg(originStation.coord, null, Action.WaitForTrain(originStation.id)))
+                        // Leg 3: walk from dest station to destination
                         upcomingLegs.addLast(TripLeg(to, TravelMode.Walk, terminal))
-                        // Leg 1: walk to nearest bus stop
-                        return navigateWithoutClearingLegs(from, originStop.coord, pf, TravelMode.Walk, Action.WaitForBus(originStop.id))
+                        // Leg 1: walk to nearest train station
+                        return navigateWithoutClearingLegs(from, originStation.coord, pf, TravelMode.Walk, Action.WaitForTrain(originStation.id))
                     }
                 }
             }
         }
 
-        // Default: walk directly
-        return navigateTo(from, to, pf, TravelMode.Walk, terminal)
+        // Try bus
+        val originStop = transit.nearestStop(from)
+        if (originStop != null && originStop.coord.distanceTo(from) < 30) {
+            val routeInfo = transit.findBestRoute(originStop, to)
+            if (routeInfo != null) {
+                val (_, destStop) = routeInfo
+                if (destStop.coord.distanceTo(to) < distance * 0.7) {
+                    peep.alightAtStopId = destStop.id
+                    // Leg 2: wait for bus at origin stop
+                    upcomingLegs.addLast(TripLeg(originStop.coord, null, Action.WaitForBus(originStop.id)))
+                    // Leg 3: walk from dest stop to destination
+                    upcomingLegs.addLast(TripLeg(to, TravelMode.Walk, terminal))
+                    // Leg 1: walk to nearest bus stop
+                    return navigateWithoutClearingLegs(from, originStop.coord, pf, TravelMode.Walk, Action.WaitForBus(originStop.id))
+                }
+            }
+        }
+
+        return null
     }
 
     /** Navigate without clearing upcoming legs (for first leg of multi-leg trip). */
@@ -164,7 +227,7 @@ class NavigationHelper {
         if (from == to) return terminal
         val path = pf.findPath(from, to, mode)
         if (path.isEmpty()) {
-            // Can't reach car - fall back to walking directly
+            // Can't reach destination - fall back
             upcomingLegs.clear()
             return Action.Idle
         }
