@@ -91,7 +91,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | Vehicle + Road Rendering | #34 | ✅ Done |
 | Bus Transit System | #35 | ✅ Done |
 | Train + Subway System | #36 | ✅ Done |
-| Transport Economics | #37 | |
+| Transport Economics | #37 | ✅ Done |
 
 ## Key Files
 
