@@ -73,7 +73,13 @@ data class StatsData(
     val gini: Float = 0f,
     val avgFriends: Float = 0f,
     val households: Int = 0,
-    val singles: Int = 0
+    val singles: Int = 0,
+    val avgCommuteTime: Float = 0f,
+    val transitRidership: Int = 0,
+    val carUsagePercent: Float = 0f,
+    val transitUsagePercent: Float = 0f,
+    val walkBikePercent: Float = 0f,
+    val avgTransportSpending: Float = 0f
 )
 
 @Serializable

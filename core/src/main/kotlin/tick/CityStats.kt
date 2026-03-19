@@ -1,6 +1,7 @@
 package tick
 
 import peep.Peep
+import world.TravelMode
 import world.WorldMap
 
 data class CityStats(
@@ -20,7 +21,13 @@ data class CityStats(
     val giniCoefficient: Float = 0f,
     val avgFriends: Float = 0f,
     val householdCount: Int = 0,
-    val singlesCount: Int = 0
+    val singlesCount: Int = 0,
+    val avgCommuteTime: Float = 0f,
+    val transitRidership: Int = 0,
+    val carUsagePercent: Float = 0f,
+    val transitUsagePercent: Float = 0f,
+    val walkBikePercent: Float = 0f,
+    val avgTransportSpending: Float = 0f
 ) {
     companion object {
         fun compute(engine: TickEngine): CityStats {
@@ -57,6 +64,22 @@ data class CityStats(
 
             val avgFriends = peeps.map { it.friendships.size }.average().toFloat()
 
+            // Transport stats
+            val commuters = peeps.filter { it.tripsToday > 0 }
+            val avgCommuteTime = if (commuters.isNotEmpty()) commuters.map { it.commuteTimeTicks }.average().toFloat() else 0f
+            val transitRidership = peeps.count {
+                it.lastTripMode == TravelMode.Bus || it.lastTripMode == TravelMode.Train
+            }
+            val totalTrips = peeps.sumOf { it.tripsToday }
+            val carTrips = peeps.count { it.tripsToday > 0 && it.lastTripMode == TravelMode.Drive }
+            val transitTrips = peeps.count { it.tripsToday > 0 && (it.lastTripMode == TravelMode.Bus || it.lastTripMode == TravelMode.Train) }
+            val walkBikeTrips = peeps.count { it.tripsToday > 0 && (it.lastTripMode == TravelMode.Walk || it.lastTripMode == TravelMode.Bike) }
+            val trippers = commuters.size.coerceAtLeast(1).toFloat()
+            val carUsagePercent = carTrips / trippers
+            val transitUsagePercent = transitTrips / trippers
+            val walkBikePercent = walkBikeTrips / trippers
+            val avgTransportSpending = if (commuters.isNotEmpty()) commuters.map { it.transportSpending }.average().toFloat() else 0f
+
             return CityStats(
                 population = peeps.size,
                 birthsToday = engine.birthsToday,
@@ -74,7 +97,13 @@ data class CityStats(
                 giniCoefficient = gini,
                 avgFriends = avgFriends,
                 householdCount = engine.households.size,
-                singlesCount = peeps.count { !it.isPartnered }
+                singlesCount = peeps.count { !it.isPartnered },
+                avgCommuteTime = avgCommuteTime,
+                transitRidership = transitRidership,
+                carUsagePercent = carUsagePercent,
+                transitUsagePercent = transitUsagePercent,
+                walkBikePercent = walkBikePercent,
+                avgTransportSpending = avgTransportSpending
             )
         }
 

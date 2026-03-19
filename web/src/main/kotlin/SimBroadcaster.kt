@@ -109,7 +109,13 @@ class SimBroadcaster(private val json: Json) {
             gini = s.giniCoefficient,
             avgFriends = s.avgFriends,
             households = s.householdCount,
-            singles = s.singlesCount
+            singles = s.singlesCount,
+            avgCommuteTime = s.avgCommuteTime,
+            transitRidership = s.transitRidership,
+            carUsagePercent = s.carUsagePercent,
+            transitUsagePercent = s.transitUsagePercent,
+            walkBikePercent = s.walkBikePercent,
+            avgTransportSpending = s.avgTransportSpending
         )
         val message = json.encodeToString(EventsMessage.serializer(), EventsMessage(events = events, stats = statsData))
         broadcast(message)

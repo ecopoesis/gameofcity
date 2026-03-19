@@ -866,6 +866,9 @@ function updateStatsBar(s) {
     el('statHappy', `Happy: ${(s.avgHappiness * 100).toFixed(0)}%`);
     el('statHomeless', `Homeless: ${s.homeless}`);
     el('statGini', `Gini: ${(s.gini * 100).toFixed(0)}%`);
+    el('statCar', `Car: ${(s.carUsagePercent * 100).toFixed(0)}%`);
+    el('statTransit', `Transit: ${(s.transitUsagePercent * 100).toFixed(0)}%`);
+    el('statWalk', `Walk: ${(s.walkBikePercent * 100).toFixed(0)}%`);
 }
 
 // --- Resize ---

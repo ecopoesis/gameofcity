@@ -174,6 +174,13 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                     map.peepsAt.getOrPut(peep.position) { mutableListOf() }.remove(peep.id)
                     peep.position = action.target
                     map.peepsAt.getOrPut(action.target) { mutableListOf() }.add(peep.id)
+                    peep.commuteTimeTicks++
+                    // Car fuel cost: 0.02 per cell moved
+                    if (peep.travelMode == TravelMode.Drive) {
+                        val cost = 0.02f
+                        peep.money -= cost
+                        peep.transportSpending += cost
+                    }
                 }
             }
             is Action.Eat -> {
@@ -255,6 +262,8 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 peep.travelMode = TravelMode.Drive
                 map.parkedVehicles.remove(action.spot)
                 peep.parkingSpot = null
+                peep.tripsToday++
+                peep.lastTripMode = TravelMode.Drive
             }
             is Action.WaitForBus -> {
                 // Try to board a bus at this stop
@@ -262,6 +271,12 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 if (bus != null) {
                     peep.travelMode = TravelMode.Bus
                     peep.ridingBusId = bus.id
+                    // Flat bus fare
+                    val fare = 2f
+                    peep.money -= fare
+                    peep.transportSpending += fare
+                    peep.tripsToday++
+                    peep.lastTripMode = TravelMode.Bus
                 }
             }
             is Action.RideBus -> {
@@ -272,6 +287,12 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
                 if (train != null) {
                     peep.travelMode = TravelMode.Train
                     peep.ridingTrainId = train.id
+                    // Train fare (slightly more than bus)
+                    val fare = 3f
+                    peep.money -= fare
+                    peep.transportSpending += fare
+                    peep.tripsToday++
+                    peep.lastTripMode = TravelMode.Train
                 }
             }
             is Action.RideTrain -> {
@@ -589,6 +610,13 @@ class TickEngine(val map: WorldMap, private val parallelContext: CoroutineContex
 
             // === Demographics (daily) ===
             birthsToday = 0; deathsToday = 0; immigrantsToday = 0; emigrantsToday = 0
+
+            // Reset daily transport stats
+            peeps.values.forEach { peep ->
+                peep.commuteTimeTicks = 0
+                peep.transportSpending = 0f
+                peep.tripsToday = 0
+            }
 
             // Aging: 1 sim-day ≈ 1 year of life
             peeps.values.forEach { peep ->

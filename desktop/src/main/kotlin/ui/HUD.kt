@@ -202,7 +202,10 @@ class HUD(private val engine: TickEngine, private val skin: Skin) {
         val empPct = (s.employmentRate * 100).toInt()
         val hapPct = (s.avgHappiness * 100).toInt()
         val giniPct = (s.giniCoefficient * 100).toInt()
-        statsLabel.setText("Emp: $empPct%  Homeless: ${s.homelessCount}  Happy: $hapPct%  Gini: $giniPct%  HH: ${s.householdCount}")
+        val carPct = (s.carUsagePercent * 100).toInt()
+        val tranPct = (s.transitUsagePercent * 100).toInt()
+        val walkPct = (s.walkBikePercent * 100).toInt()
+        statsLabel.setText("Emp: $empPct%  Homeless: ${s.homelessCount}  Happy: $hapPct%  Gini: $giniPct%  HH: ${s.householdCount}  Car: $carPct%  Transit: $tranPct%  Walk: $walkPct%")
 
         // Event ticker: last 5 events
         val recent = engine.eventLog.recent(5)

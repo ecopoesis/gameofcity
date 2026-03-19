@@ -40,4 +40,8 @@ data class Peep(
     val isChild: Boolean get() = age < 18
     val isRetired: Boolean get() = age >= 65
     var criticalDays: Int = 0  // consecutive days with 3+ critical needs
+    var commuteTimeTicks: Int = 0  // ticks spent commuting this day
+    var transportSpending: Float = 0f  // money spent on transport this day
+    var tripsToday: Int = 0  // number of trips taken today
+    var lastTripMode: TravelMode = TravelMode.Walk  // mode of last trip
 }
