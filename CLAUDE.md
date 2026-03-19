@@ -90,7 +90,7 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | Brains Learn to Drive | #33 | ✅ Done |
 | Vehicle + Road Rendering | #34 | ✅ Done |
 | Bus Transit System | #35 | ✅ Done |
-| Train + Subway System | #36 | |
+| Train + Subway System | #36 | ✅ Done |
 | Transport Economics | #37 | |
 
 ## Key Files
@@ -118,7 +118,10 @@ Conway's-Game-of-Life-inspired city simulation. Citizens called **Peeps** are au
 | `core/src/main/kotlin/world/Vehicle.kt` | VehicleType enum (Car, Bike) |
 | `core/src/main/kotlin/pathfind/BinaryHeap.kt` | Pure Kotlin min-heap priority queue |
 | `core/src/main/kotlin/pathfind/AStarPathfinder.kt` | Multi-modal A* pathfinding with variable movement costs |
-| `core/src/main/kotlin/transit/TransitSystem.kt` | Bus transit: routes, stops, bus advancement |
+| `core/src/main/kotlin/transit/TransitSystem.kt` | Bus + rail transit: routes, stops, stations, advancement |
+| `core/src/main/kotlin/transit/TrainStation.kt` | Train station data model (surface + subway) |
+| `core/src/main/kotlin/transit/TrainRoute.kt` | Train route data model |
+| `core/src/main/kotlin/transit/Train.kt` | Train entity with passengers and movement |
 | `core/src/main/kotlin/gen/CityGenerator.kt` | Procedural city gen (grid + organic roads) |
 | `desktop/src/main/kotlin/GameOfCityApp.kt` | Main game loop, camera pan |
 | `desktop/src/main/kotlin/rendering/CityRenderer.kt` | 3D city render with subtype colors |
